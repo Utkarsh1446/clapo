@@ -73,7 +73,7 @@ export function ProfilePage({ user, posts }: Props) {
         console.log("📊 Loading profile for Privy user:", privyUser.id);
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
 

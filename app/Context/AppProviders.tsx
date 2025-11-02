@@ -7,20 +7,23 @@ import { UserProvider } from './UserProvider'
 import { NotificationProvider } from './NotificationProvider'
 import { MessageProvider } from './MessageProvider'
 import { CommunityProvider } from './CommunityProvider'
+import { AuraProvider } from './AuraProvider'
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <UserProvider>
-        <PostProvider>
-          <NotificationProvider>
-            <MessageProvider>
-              <CommunityProvider>
-                {children}
-              </CommunityProvider>
-            </MessageProvider>
-          </NotificationProvider>
-        </PostProvider>
+        <AuraProvider>
+          <PostProvider>
+            <NotificationProvider>
+              <MessageProvider>
+                <CommunityProvider>
+                  {children}
+                </CommunityProvider>
+              </MessageProvider>
+            </NotificationProvider>
+          </PostProvider>
+        </AuraProvider>
       </UserProvider>
     </AuthProvider>
   )
@@ -33,3 +36,4 @@ export { useUser } from './UserProvider'
 export { useNotification } from './NotificationProvider'
 export { useMessage } from './MessageProvider'
 export { useCommunity } from './CommunityProvider'
+export { useAura } from './AuraProvider'

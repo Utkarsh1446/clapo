@@ -42,7 +42,7 @@ const NotificationPage = () => {
         try {
           console.log('🔍 NotificationPage: Fetching Privy user from backend...');
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
 

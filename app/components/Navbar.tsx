@@ -16,6 +16,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useWalletContext } from "@/context/WalletContext";
+import { AuraBalance } from "./Aura/AuraBalance";
 
 // Dynamic import for SignIn page (1,117 lines) - improves initial load
 const SignInPage = dynamic(() => import("../SignIn/page"), {
@@ -130,6 +131,7 @@ export default function Navbar() {
 
         {/* Desktop Buttons (only lg and up) */}
         <div className="hidden lg:flex gap-2 items-center">
+          {isLoggedIn && <AuraBalance compact showDetails />}
           <button
             onClick={() => openDialog("x")}
             className="inline-flex items-center justify-center ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-[6px] min-w-[105px] transition-all duration-350 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[hsla(220,10%,12%,1)] text-white shadow-[0px_1px_1px_0px_rgba(255,255,255,0.12)_inset,0px_1px_2px_0px_rgba(0,0,0,0.08),0px_0px_0px_1px_#000] hover:bg-[hsla(220,10%,18%,1)] px-3 py-1.5 text-xs rounded-full leading-[24px] font-bold w-full sm:w-auto whitespace-nowrap"
@@ -156,7 +158,8 @@ export default function Navbar() {
         </div>
 
         {/* Mobile + iPad Connect Button */}
-        <div className="flex lg:hidden justify-center">
+        <div className="flex lg:hidden justify-center gap-2 items-center">
+          {isLoggedIn && <AuraBalance compact />}
           <button
             style={{
               boxShadow:

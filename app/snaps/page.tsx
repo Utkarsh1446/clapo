@@ -238,13 +238,15 @@ function SocialFeedPageContent() {
         try {
           // Fetch user from backend using Privy ID
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
 
           if (data.exists && data.user?.id) {
             console.log("✅ Found user in backend:", data.user.id);
             setCurrentUserId(data.user.id);
+            // Save to localStorage for AuraProvider
+            localStorage.setItem('userId', data.user.id);
             fetchPosts(data.user.id);
             fetchNotifications(data.user.id);
             fetchActivities(data.user.id);

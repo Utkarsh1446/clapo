@@ -16,13 +16,15 @@ export const useStories = () => {
         console.log("📊 useStories: Loading user from Privy:", privyUser.id);
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
 
           if (data.exists && data.user?.id) {
             console.log("✅ useStories: Found user in backend:", data.user.id);
             setCurrentUserId(data.user.id);
+            // Save to localStorage for AuraProvider
+            localStorage.setItem('userId', data.user.id);
           } else {
             console.log("❌ useStories: User not found in backend");
             setCurrentUserId(null);

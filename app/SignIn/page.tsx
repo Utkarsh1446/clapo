@@ -119,7 +119,7 @@ function SignInPage() {
           try {
             console.log("🌐 Checking user in backend:", user.id);
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${user.id}`
+              `/api/users/privy/${user.id}`
             );
             const data = await response.json();
             console.log("📦 Backend response:", data);
@@ -127,6 +127,8 @@ function SignInPage() {
             if (data.exists && data.user?.hasCompletedOnboarding) {
               // Existing user - redirect immediately
               console.log("✅ Returning user detected, redirecting immediately...");
+              // Save to localStorage for AuraProvider
+              localStorage.setItem('userId', data.user.id);
               setIsRedirecting(true);
               console.log("🚀 Redirecting now to /snaps");
               window.location.href = '/snaps';

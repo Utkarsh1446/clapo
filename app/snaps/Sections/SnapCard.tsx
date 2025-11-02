@@ -61,7 +61,7 @@ export default function SnapCard({ post, liked, bookmarked, retweeted, onLike, o
       if (privyAuthenticated && privyUser && privyReady) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
           if (data.exists && data.user?.id) {

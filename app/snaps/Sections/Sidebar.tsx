@@ -9,6 +9,7 @@ import { useWalletContext } from "@/context/WalletContext";
 import { usePrivy } from "@privy-io/react-auth";
 import { SnapComposer } from "./SnapComposer";
 import AccountInfo from "@/app/components/AccountInfo";
+import { AuraBalance } from "@/app/components/Aura/AuraBalance";
 
 // Dynamic import for SignIn page (1,117 lines) - improves initial load
 const SignInPage = dynamic(() => import("@/app/SignIn/page"), {
@@ -239,6 +240,13 @@ const handleNavClick = (value: PageKey) => {
 
           {/* Right Icons */}
           <div className="flex items-center gap-2">
+            {/* Aura Balance - Mobile */}
+            {isLoggedIn && (
+              <div className="mr-1">
+                <AuraBalance compact />
+              </div>
+            )}
+
             {/* Create Post Icon */}
             <button
               onClick={() => setActiveDialog("createPost")}
@@ -422,6 +430,13 @@ const handleNavClick = (value: PageKey) => {
                   <h3 className="text-white text-sm font-semibold tracking-wide uppercase">
                     EXPLORE MORE
                   </h3>
+
+                  {/* Aura Balance Display */}
+                  {isLoggedIn && (
+                    <div className="w-full">
+                      <AuraBalance showDetails />
+                    </div>
+                  )}
 
                   <button
                     onClick={() => setActiveDialog("x")}

@@ -137,7 +137,7 @@ export default function UserProfileClient({ userId }: UserProfileClientProps) {
         console.log("📊 Profile page - Privy user:", privyUser.id);
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${privyUser.id}`
+            `/api/users/privy/${privyUser.id}`
           );
           const data = await response.json();
           if (data.exists && data.user?.id) {
