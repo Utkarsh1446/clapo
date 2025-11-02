@@ -131,9 +131,9 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       currentUserId = localStorage.getItem('userId');
     }
     if (currentUserId) {
-      clearAuraCache(currentUserId);
-      await fetchAuraBalance(currentUserId, false);
-      await checkPostLimit(currentUserId);
+      clearAuraCache(currentUserId as string);
+      await fetchAuraBalance(currentUserId as string, false);
+      await checkPostLimit(currentUserId as string);
       await loadTransactions();
     }
   };
@@ -147,10 +147,10 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     if (!currentUserId) return;
 
     try {
-      const success = await apiIncrementPostCount(currentUserId);
+      const success = await apiIncrementPostCount(currentUserId as string);
       if (success) {
         // Refresh post limit
-        await checkPostLimit(currentUserId);
+        await checkPostLimit(currentUserId as string);
         // Refresh Aura to show the reward
         await refreshAura();
       }
@@ -178,8 +178,8 @@ export function AuraProvider({ children }: { children: ReactNode }) {
 
     if (currentUserId) {
       console.log('✅ AuraProvider: Fetching Aura data for user:', currentUserId);
-      fetchAuraBalance(currentUserId);
-      checkPostLimit(currentUserId);
+      fetchAuraBalance(currentUserId as string);
+      checkPostLimit(currentUserId as string);
       loadTransactions();
     } else {
       console.log('⚠️ AuraProvider: No user ID found, clearing Aura data');
@@ -202,8 +202,8 @@ export function AuraProvider({ children }: { children: ReactNode }) {
     if (!currentUserId) return;
 
     const interval = setInterval(() => {
-      fetchAuraBalance(currentUserId, false);
-      checkPostLimit(currentUserId);
+      fetchAuraBalance(currentUserId as string, false);
+      checkPostLimit(currentUserId as string);
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
