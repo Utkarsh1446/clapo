@@ -101,7 +101,7 @@ export function AuraProvider({ children }: { children: ReactNode }) {
 
     try {
       setTransactionsLoading(true);
-      const result = await getUserAuraTransactions(currentUserId, { limit, offset });
+      const result = await getUserAuraTransactions(currentUserId as string, { limit, offset });
 
       if (result) {
         setTransactions(result.transactions);
