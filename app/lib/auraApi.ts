@@ -14,7 +14,7 @@ import {
   getNextTierInfo
 } from '../types/aura';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_AURA_API_URL || 'http://server.blazeswap.io/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_AURA_API_URL || 'http://server.blazeswap.io/api/aura';
 
 /**
  * Backend response types (snake_case to match actual API)
@@ -56,6 +56,37 @@ interface BackendLeaderboardEntry {
   total_spent: number;
   follower_count: number;
   rank: number;
+}
+
+interface BackendUserStats {
+  id: string;
+  username: string;
+  display_name: string | null;
+  current_aura: number;
+  tier: number;
+  total_earned: number;
+  total_spent: number;
+  last_decay_at: string;
+  posts_today: number;
+  aura_earned_today: number;
+  aura_spent_today: number;
+}
+
+interface BackendCanPostResponse {
+  can_post: boolean;
+  posts_today: number;
+  max_posts: number;
+  remaining_posts: number;
+  next_reset: string;
+}
+
+interface BackendIncrementPostResponse {
+  success: boolean;
+  auraRewarded: number;
+  newBalance: number;
+  newTier: number;
+  postsRemaining: number;
+  message: string;
 }
 
 /**
@@ -334,13 +365,21 @@ export async function canCreatePost(userId: string): Promise<{
 /**
  * Increment daily post count (call after creating a post)
  */
-export async function incrementPostCount(userId: string): Promise<boolean> {
+export async function incrementPostCount(
+  userId: string,
+  postId: string,
+  contentType: 'post' | 'snap' = 'post'
+): Promise<BackendIncrementPostResponse | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/${userId}/increment-post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        postId,
+        contentType
+      })
     });
 
     if (!response.ok) {
@@ -348,10 +387,43 @@ export async function incrementPostCount(userId: string): Promise<boolean> {
     }
 
     const result = await response.json();
-    return result.success;
+    return result;
   } catch (error) {
     console.error('Error incrementing post count:', error);
-    return false;
+    return null;
+  }
+}
+
+/**
+ * Get user's detailed stats
+ */
+export async function getUserAuraStats(userId: string): Promise<BackendUserStats | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${userId}/stats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.warn('User stats not found:', userId);
+        return null;
+      }
+      throw new Error(`Failed to fetch user stats: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      return result.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    return null;
   }
 }
 

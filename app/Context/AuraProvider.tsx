@@ -5,6 +5,7 @@ import { useAuth } from './AuthProvider';
 import {
   getUserAuraBalance,
   getUserAuraTransactions,
+  getUserAuraStats,
   getCachedAura,
   setCachedAura,
   clearAuraCache,
@@ -25,7 +26,7 @@ interface AuraContextType {
   canPost: boolean;
   refreshAura: () => Promise<void>;
   loadTransactions: (limit?: number, offset?: number) => Promise<void>;
-  incrementPostCount: () => Promise<void>;
+  incrementPostCount: (postId: string, contentType?: 'post' | 'snap') => Promise<boolean>;
 }
 
 const AuraContext = createContext<AuraContextType | undefined>(undefined);
@@ -152,23 +153,43 @@ export function AuraProvider({ children }: { children: ReactNode }) {
   };
 
   // Increment post count
-  const incrementPostCount = async () => {
+  const incrementPostCount = async (postId: string, contentType: 'post' | 'snap' = 'post'): Promise<boolean> => {
     let currentUserId = userId || user?.id;
     if (!currentUserId && typeof window !== 'undefined') {
       currentUserId = localStorage.getItem('userId');
     }
-    if (!currentUserId) return;
+    if (!currentUserId) return false;
 
     try {
-      const success = await apiIncrementPostCount(currentUserId as string);
-      if (success) {
-        // Refresh post limit
-        await checkPostLimit(currentUserId as string);
-        // Refresh Aura to show the reward
+      const result = await apiIncrementPostCount(currentUserId as string, postId, contentType);
+      if (result && result.success) {
+        console.log('✅ Post count incremented:', result.message);
+        console.log('📊 Aura rewarded:', result.auraRewarded);
+        console.log('💰 New balance:', result.newBalance);
+        console.log('📮 Posts remaining:', result.postsRemaining);
+
+        // Update local state immediately
+        setPostsRemaining(result.postsRemaining);
+        setCanPost(result.postsRemaining > 0);
+
+        // Update aura balance if we have it
+        if (aura) {
+          setAura({
+            ...aura,
+            balance: result.newBalance,
+            tier: result.newTier
+          });
+        }
+
+        // Refresh to get latest data
         await refreshAura();
+
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error incrementing post count:', err);
+      return false;
     }
   };
 

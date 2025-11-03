@@ -23,6 +23,8 @@ import { generatePostTokenUUID } from '@/app/lib/uuid'
 import MentionAutocomplete from '@/app/components/MentionAutocomplete'
 // import { getMentionTriggerInfo } from ''
 import { getMentionTriggerInfo, replaceMentionText, extractMentions } from '@/app/lib/mentionUtils'
+import { useAura } from '@/app/Context/AppProviders'
+import { DailyPostLimitIndicator } from '@/app/components/Aura/DailyPostLimitIndicator'
 
 // Toast Component
 const Toast = ({ 
@@ -78,6 +80,9 @@ export function SnapComposer({ close }: { close: () => void }) {
   const [mentionedUsers, setMentionedUsers] = useState<Array<{ user_id: string; username: string }>>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Submission guard to prevent duplicate posts
+  const submissionInProgressRef = useRef(false)
+
   // Token creation parameters (quadratic pricing system)
   const [freebieCount, setFreebieCount] = useState(1) // Number of free tokens
   const [quadraticDivisor, setQuadraticDivisor] = useState(1) // Price curve steepness (1 = steep, higher = flatter)
@@ -86,6 +91,7 @@ export function SnapComposer({ close }: { close: () => void }) {
   const { createPostToken, isConnected, connectWallet, isConnecting, address } = usePostToken();
   const { authenticated, user: privyUser, ready } = usePrivy();
   const { getUserProfile, updateUserProfile } = useApi()
+  const { canPost: canPostAura, postsRemaining, incrementPostCount } = useAura();
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<any>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -263,13 +269,25 @@ export function SnapComposer({ close }: { close: () => void }) {
 
   const handleSubmit = async () => {
     console.log('🚀 handleSubmit function called!')
-    
+
+    // Prevent duplicate submissions
+    if (submissionInProgressRef.current) {
+      console.warn('⚠️ Submission already in progress, ignoring duplicate call')
+      return
+    }
+
     // Check if there's any content or media
     if (!hasContent && !mediaUrl) {
       alert('Please add some content or media before posting')
       return
     }
-    
+
+    // Check Aura daily post limit
+    if (!canPostAura) {
+      alert(`Daily post limit reached! You can create up to 5 posts per day. You have ${postsRemaining} posts remaining today.`)
+      return
+    }
+
     // Check wallet connection for token creation
     if (!isConnected) {
       try {
@@ -303,6 +321,8 @@ export function SnapComposer({ close }: { close: () => void }) {
       return
     }
 
+    // Set both guards
+    submissionInProgressRef.current = true
     setIsSubmitting(true)
 
     try {
@@ -339,6 +359,20 @@ export function SnapComposer({ close }: { close: () => void }) {
       console.log('✅ createPost completed successfully', response)
       console.log('📬 Check backend for mention notifications for:', mentions.join(', '))
 
+      // Increment post count and award Aura
+      try {
+        console.log('🎯 Calling incrementPostCount with:', { postUuid, contentType: 'post' })
+        const auraSuccess = await incrementPostCount(postUuid, 'post')
+        if (auraSuccess) {
+          console.log('✨ Aura: Post count incremented successfully, +10 Aura awarded')
+        } else {
+          console.error('⚠️ Aura: Failed to increment post count (returned false)')
+        }
+      } catch (auraError) {
+        console.error('⚠️ Aura: Failed to increment post count (exception):', auraError)
+        // Don't fail the post creation if Aura update fails
+      }
+
       // Enrich the response with current user's profile data to prevent "Unknown" display
       if (response.post && profile) {
         response.post.username = profile.username || profile.display_name
@@ -366,46 +400,48 @@ export function SnapComposer({ close }: { close: () => void }) {
             true // Enable gas sponsorship
           )
           // Post token created successfully
-          showSuccessToast(`🎉 Snap posted and token created with sponsored gas! TX: ${tokenTxHash.slice(0, 10)}...`)
+          showSuccessToast(`✨ Snap posted! +10 Aura earned | Token created with sponsored gas! TX: ${tokenTxHash.slice(0, 10)}...`)
         } catch (tokenError) {
           console.error('Failed to create post token:', tokenError)
-          let errorMessage = 'Snap posted successfully, but token creation failed'
+          let errorMessage = 'Snap posted successfully! +10 Aura earned, but token creation failed'
 
           if (tokenError.message?.includes('Post with this UUID already exists')) {
-            errorMessage = 'Snap posted successfully, but token already exists for this post'
+            errorMessage = 'Snap posted successfully! +10 Aura earned, but token already exists for this post'
           } else if (tokenError.message?.includes('Insufficient')) {
-            errorMessage = 'Snap posted successfully, but insufficient USDC for token creation'
+            errorMessage = 'Snap posted successfully! +10 Aura earned, but insufficient USDC for token creation'
           } else if (tokenError.message?.includes('reverted')) {
-            errorMessage = 'Snap posted successfully, but token creation transaction failed'
+            errorMessage = 'Snap posted successfully! +10 Aura earned, but token creation transaction failed'
           }
 
           showErrorToast(errorMessage)
         }
       } else {
-        showSuccessToast('Snap posted successfully! (Connect wallet to enable token trading)')
+        showSuccessToast('✨ Snap posted successfully! +10 Aura earned (Connect wallet to enable token trading)')
       }
 
       // Reset form and close dialog after successful post creation
       setContent('')
       setMediaUrl(undefined)
       setUploadedMedia(null)
-      
-      // Reset loading state immediately
+
+      // Reset loading state and submission guard immediately
       setIsSubmitting(false)
-      
+      submissionInProgressRef.current = false
+
       // Close the dialog
       close()
-      
+
       // Fetch posts in background (don't wait for it)
       fetchPosts(userId).catch(error => {
         console.error('Failed to fetch posts after creation:', error)
       })
-      
+
     } catch (error) {
       console.error('Failed to create post:', error)
       alert('Failed to create post. Please try again.')
-      // Reset loading state on error
+      // Reset loading state and submission guard on error
       setIsSubmitting(false)
+      submissionInProgressRef.current = false
     }
   }
 
@@ -543,6 +579,11 @@ export function SnapComposer({ close }: { close: () => void }) {
             >
               <X className="w-4 h-4 text-gray-400" />
             </button>
+          </div>
+
+          {/* Aura Post Limit Indicator */}
+          <div className="mb-4">
+            <DailyPostLimitIndicator />
           </div>
 
         {/* Dialog Content */}
