@@ -119,7 +119,7 @@ function SignInPage() {
           try {
             console.log("🌐 Checking user in backend:", user.id);
             const response = await fetch(
-              `/api/users/privy/${user.id}`
+              `${process.env.NEXT_PUBLIC_API_URL}/users/privy/${user.id}`
             );
             const data = await response.json();
             console.log("📦 Backend response:", data);
@@ -127,8 +127,6 @@ function SignInPage() {
             if (data.exists && data.user?.hasCompletedOnboarding) {
               // Existing user - redirect immediately
               console.log("✅ Returning user detected, redirecting immediately...");
-              // Save to localStorage for AuraProvider
-              localStorage.setItem('userId', data.user.id);
               setIsRedirecting(true);
               console.log("🚀 Redirecting now to /snaps");
               window.location.href = '/snaps';
@@ -325,6 +323,12 @@ function SignInPage() {
       // Save minimal data to localStorage for session
       localStorage.setItem(`profile_completed_${user.id}`, 'true');
       localStorage.setItem('latest_user_profile', JSON.stringify(data.user || profileData));
+
+      // Save userId for AuraProvider
+      if (data.user?.id) {
+        localStorage.setItem('userId', data.user.id);
+        console.log('💾 Saved userId to localStorage:', data.user.id);
+      }
 
       console.log("✅ Profile created successfully:", data);
       setFlowState("success");
