@@ -66,7 +66,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
 
           if (!embeddedWallet) {
-            console.error('❌ WalletContext: No Privy embedded wallet found');
+            console.warn('⚠️ WalletContext: No Privy embedded wallet found');
             console.log('Available wallets:', wallets.map(w => ({ type: w.walletClientType, address: w.address })));
             return;
           }

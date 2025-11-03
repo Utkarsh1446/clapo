@@ -1,5 +1,5 @@
 "use client";
-import { Home, Bell, User, MessageCircle, Activity, Blocks, TrendingUp, Telescope, Wallet, Lock, Settings, LogOut, PersonStandingIcon, AtSign, Film, Search } from "lucide-react";
+import { Home, Bell, User, MessageCircle, Activity, Blocks, TrendingUp, Telescope, Wallet, Lock, Settings, LogOut, PersonStandingIcon, AtSign, Film, Search, Menu, X, Plus } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -56,6 +56,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [activeDialog, setActiveDialog] = useState<null | "x" | "wallet" | "createPost">(null);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const router = useRouter();
   const { connect, disconnect, address } = useWalletContext();
   const { authenticated, user: privyUser, ready } = usePrivy();
@@ -223,113 +224,193 @@ const handleNavClick = (value: PageKey) => {
   
   return (
     <>
-      {/* Mobile Top Bar - Facebook Style */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-black border-b-2 border-gray-700/70 z-[9999]">
-        {/* Top Row: Logo + 3 Icons */}
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo */}
-          <div className="flex items-center">
+      {/* Mobile Navigation */}
+      <div className="lg:hidden">
+        {/* Top Bar - Instagram Style */}
+        <div className="fixed top-0 left-0 right-0 bg-black border-b border-gray-800 z-[9999]">
+          <div className="flex items-center justify-between px-4 py-2">
+            {/* Logo */}
             <Image
               src="/navlogo.png"
               alt="Clapo Logo"
-              width={120}
-              height={40}
-              className="object-contain h-8 w-auto"
+              width={110}
+              height={36}
+              className="object-contain h-7 w-auto"
             />
+
+            {/* Top Right Icons */}
+            <div className="flex items-center gap-4">
+              {/* Search Icon */}
+              <button
+                onClick={() => handleNavClick("explore")}
+                className="text-white transition-opacity active:opacity-50"
+                aria-label="Search"
+              >
+                <Search className="w-6 h-6" strokeWidth={2} />
+              </button>
+
+              {/* Messages Icon */}
+              <button
+                onClick={() => handleNavClick("messages")}
+                className="text-white transition-opacity active:opacity-50"
+                aria-label="Messages"
+              >
+                <MessageCircle className="w-6 h-6" strokeWidth={2} />
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* Right Icons */}
-          <div className="flex items-center gap-2">
-            {/* Aura Balance - Mobile */}
-            {isLoggedIn && (
-              <div className="mr-1">
-                <AuraBalance compact />
-              </div>
-            )}
+        {/* Bottom Navigation Bar - Instagram Style */}
+        <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-[9999]">
+          <div className="flex items-center justify-around px-4 py-2">
+            {/* Home */}
+            <button
+              onClick={() => handleNavClick("home")}
+              className="p-2 transition-opacity active:opacity-50"
+            >
+              <Home
+                className={`w-7 h-7 ${currentPage === "home" ? "fill-white" : ""}`}
+                strokeWidth={currentPage === "home" ? 2.5 : 2}
+              />
+            </button>
 
-            {/* Create Post Icon */}
+            {/* Munch */}
+            <button
+              onClick={() => handleNavClick("munch")}
+              className="p-2 transition-opacity active:opacity-50"
+            >
+              <Film
+                className={`w-7 h-7 ${currentPage === "munch" ? "fill-white" : ""}`}
+                strokeWidth={currentPage === "munch" ? 2.5 : 2}
+              />
+            </button>
+
+            {/* Upload Post - Instagram Style */}
             <button
               onClick={() => setActiveDialog("createPost")}
-              className="p-2 rounded-full bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-              aria-label="Create Post"
+              className="p-2 transition-opacity active:opacity-50"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <div className="w-7 h-7 border-2 border-white rounded-md flex items-center justify-center">
+                <Plus className="w-5 h-5" strokeWidth={2.5} />
+              </div>
             </button>
 
-            {/* Search/Explore Icon */}
+            {/* Notifications */}
             <button
-              onClick={() => handleNavClick("explore")}
-              className={`p-2 rounded-full transition-colors ${
-                currentPage === "explore"
-                  ? "bg-gray-700 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
-              aria-label="Explore"
+              onClick={() => handleNavClick("notifications")}
+              className="p-2 transition-opacity active:opacity-50"
             >
-              <Search className="w-6 h-6" />
+              <Bell
+                className={`w-7 h-7 ${currentPage === "notifications" ? "fill-white" : ""}`}
+                strokeWidth={currentPage === "notifications" ? 2.5 : 2}
+              />
             </button>
 
-            {/* Messages Icon */}
+            {/* Profile */}
             <button
-              onClick={() => handleNavClick("messages")}
-              className={`p-2 rounded-full transition-colors ${
-                currentPage === "messages"
-                  ? "bg-gray-700 text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
-              aria-label="Messages"
+              onClick={() => handleNavClick("profile")}
+              className="p-2 transition-opacity active:opacity-50"
             >
-              <MessageCircle className="w-6 h-6" />
+              <div className={`w-7 h-7 rounded-full ${
+                currentPage === "profile"
+                  ? "border-2 border-white"
+                  : "border border-gray-400"
+              } flex items-center justify-center`}>
+                <User className="w-4 h-4" strokeWidth={2} />
+              </div>
+            </button>
+
+            {/* Menu */}
+            <button
+              onClick={() => setShowHamburgerMenu(!showHamburgerMenu)}
+              className="p-2 transition-opacity active:opacity-50"
+            >
+              <Menu className="w-7 h-7" strokeWidth={2} />
             </button>
           </div>
         </div>
 
-        {/* Bottom Row: Other Navigation Items - Fixed Grid */}
-        <div className="grid grid-cols-7 gap-0.5 px-1 py-2">
-          {navItems
-            .filter((item) => item.showOnMobile !== false && item.value !== "explore" && item.value !== "messages")
-            .map(({ label, value, icon, activeIcon }) => {
-              const isActive = currentPage === value;
-
-              return (
+        {/* Hamburger Menu Slide-in */}
+        <AnimatePresence>
+          {showHamburgerMenu && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000]"
+              onClick={() => setShowHamburgerMenu(false)}
+            >
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="fixed right-0 top-0 bottom-0 w-80 bg-black border-l-2 border-gray-700/70 p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
                 <button
-                  key={value}
-                  onClick={() => handleNavClick(value)}
-                  className={`flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg transition-all ${
-                    isActive
-                      ? "bg-gray-700/50 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700/30"
-                  }`}
+                  onClick={() => setShowHamburgerMenu(false)}
+                  className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50"
                 >
-                  <span className="flex-shrink-0 scale-90">
-                    {isActive ? activeIcon : icon}
-                  </span>
-                  {/* <span className="text-[10px] font-medium truncate w-full text-center px-0.5">
-                    {label}
-                  </span> */}
+                  <X className="w-6 h-6" />
                 </button>
-              );
-            })}
 
-          {/* Account/Profile Button */}
-          <button
-            onClick={() => openDialog("x")}
-            className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-700/30"
-          >
-            <Image
-              src={"/4.png"}
-              alt={"Account"}
-              width={24}
-              height={24}
-              className="rounded-full scale-90 bg-black border border-gray-700/70"
-            />
-            {/* <span className="text-[10px] font-medium truncate w-full text-center px-0.5">
-              Account
-            </span> */}
-          </button>
-        </div>
+                {/* Menu Header */}
+                <h2 className="text-xl font-bold text-white mb-6 mt-2">Menu</h2>
+
+                {/* Menu Items */}
+                <div className="space-y-2">
+                  {/* Aura Balance */}
+                  {isLoggedIn && (
+                    <div className="mb-4">
+                      <AuraBalance showDetails />
+                    </div>
+                  )}
+
+                  {/* Creator Share */}
+                  <button
+                    onClick={() => {
+                      handleNavClick("share");
+                      setShowHamburgerMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white transition-colors"
+                  >
+                    <Blocks className="w-5 h-5 text-[#6e54ff]" />
+                    <span className="font-medium">Creator Shares</span>
+                  </button>
+
+                  {/* Wallet */}
+                  <button
+                    onClick={() => {
+                      handleNavClick("wallet");
+                      setShowHamburgerMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white transition-colors"
+                  >
+                    <Wallet className="w-5 h-5 text-[#6e54ff]" />
+                    <span className="font-medium">Wallet</span>
+                  </button>
+
+                  {/* Logout */}
+                  {isLoggedIn && (
+                    <button
+                      onClick={() => {
+                        setActiveDialog("x");
+                        setShowHamburgerMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-900/20 hover:bg-red-900/30 text-red-400 hover:text-red-300 transition-colors border border-red-900/30"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span className="font-medium">Account Settings</span>
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Desktop Sidebar - Only visible on desktop, exactly as before */}
@@ -430,13 +511,6 @@ const handleNavClick = (value: PageKey) => {
                   <h3 className="text-white text-sm font-semibold tracking-wide uppercase">
                     EXPLORE MORE
                   </h3>
-
-                  {/* Aura Balance Display */}
-                  {isLoggedIn && (
-                    <div className="w-full">
-                      <AuraBalance showDetails />
-                    </div>
-                  )}
 
                   <button
                     onClick={() => setActiveDialog("x")}

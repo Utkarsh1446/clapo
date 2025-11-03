@@ -155,12 +155,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <div className="relative w-full bg-black rounded-2xl border-2 border-gray-700/70 shadow-xl shadow-black/20 p-1.5 overflow-hidden" style={{ height: '800px', width: '456px' }}>
+    <div className="relative w-full h-full bg-black lg:rounded-2xl lg:border-2 border-gray-700/70 lg:shadow-xl lg:shadow-black/20 lg:p-1.5 overflow-hidden">
       {/* Video */}
       <video
         ref={videoRef}
         src={videoUrl}
-        className="w-full h-full object-cover rounded-xl"
+        className="w-full h-full object-cover lg:rounded-xl"
         loop
         playsInline
         muted={isMuted}
@@ -267,6 +267,7 @@ const Munch: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
+  const [lastScrollTime, setLastScrollTime] = useState(0);
 
   const formatCount = (count: number): string => {
     if (count >= 1000000) {
@@ -325,6 +326,58 @@ const Munch: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, videos.length]);
+
+  // Handle scroll navigation (mobile & desktop)
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const now = Date.now();
+      // Throttle scroll events to prevent rapid changes
+      if (now - lastScrollTime < 800) return;
+
+      if (e.deltaY > 50 && currentIndex < videos.length - 1) {
+        // Scroll down - next video
+        setLastScrollTime(now);
+        setCurrentIndex(prev => prev + 1);
+      } else if (e.deltaY < -50 && currentIndex > 0) {
+        // Scroll up - previous video
+        setLastScrollTime(now);
+        setCurrentIndex(prev => prev - 1);
+      }
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      if (now - lastScrollTime < 800) return;
+
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaY = touchStartY - touchEndY;
+
+      if (deltaY > 50 && currentIndex < videos.length - 1) {
+        // Swipe up - next video
+        setLastScrollTime(now);
+        setCurrentIndex(prev => prev + 1);
+      } else if (deltaY < -50 && currentIndex > 0) {
+        // Swipe down - previous video
+        setLastScrollTime(now);
+        setCurrentIndex(prev => prev - 1);
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [currentIndex, videos.length, lastScrollTime]);
 
   const handleLoadComments = async () => {
     if (!currentVideo) return;
@@ -411,8 +464,8 @@ const Munch: React.FC = () => {
 
   if (!currentVideo) {
     return (
-      <div className="relative flex items-start justify-center gap-6 pt-6" style={{ margin: '0 auto', height: '848px', maxWidth: '540px' }}>
-        <div className="w-full bg-black rounded-2xl border-2 border-gray-700/70 shadow-xl shadow-black/20 p-1.5 overflow-hidden flex items-center justify-center relative" style={{ height: '800px', width: '456px' }}>
+      <div className="relative flex flex-col lg:flex-row items-center justify-center gap-6 w-full h-[calc(100vh-7rem)] lg:h-auto lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
+        <div className="w-full h-full lg:h-[800px] lg:w-[456px] bg-black lg:rounded-2xl lg:border-2 border-gray-700/70 lg:shadow-xl lg:shadow-black/20 lg:p-1.5 overflow-hidden flex items-center justify-center relative">
           {/* Upload Modal */}
           <AnimatePresence>
             {showUploadModal && (
@@ -433,8 +486,8 @@ const Munch: React.FC = () => {
           </div>
         </div>
 
-        {/* Upload Button - Always visible on right side */}
-        <div className="flex flex-col items-center pt-64">
+        {/* Upload Button - Always visible on right side (desktop only) */}
+        <div className="hidden lg:flex flex-col items-center pt-64">
           <motion.button
             onClick={() => setShowUploadModal(true)}
             className="flex flex-col items-center gap-1"
@@ -463,10 +516,10 @@ const Munch: React.FC = () => {
   };
 
   return (
-    <div className="relative flex items-start justify-center gap-6 pt-6" style={{ margin: '0 auto', height: '848px', maxWidth: '540px' }}>
+    <div className="relative w-full h-[calc(100vh-7rem)] lg:h-auto flex flex-col lg:flex-row items-center justify-center gap-0 lg:gap-6 lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
       <motion.div
         ref={containerRef}
-        className="relative"
+        className="relative w-full h-full lg:h-[800px] lg:w-[456px]"
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={0.2}
@@ -507,8 +560,8 @@ const Munch: React.FC = () => {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-gray-900 border-2 border-gray-700/70 rounded-t-2xl flex flex-col"
-                style={{ height: '400px', width: '456px' }}
+                className="bg-gray-900 border-2 border-gray-700/70 rounded-t-2xl flex flex-col w-full lg:w-[456px]"
+                style={{ height: '400px' }}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -589,11 +642,11 @@ const Munch: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Action Buttons - External Right Side */}
-      <div className="flex flex-col items-center gap-4 pt-64">
-        {/* User Avatar Button */}
+      {/* Action Buttons - TikTok Style: Mobile overlay, Desktop external */}
+      <div className="absolute lg:relative bottom-24 lg:bottom-0 right-3 lg:right-0 flex flex-col items-center gap-5 lg:gap-4 lg:pt-64 z-30">
+        {/* User Avatar Button - Hidden on mobile */}
         <motion.div
-          className="relative cursor-pointer"
+          className="hidden lg:block relative cursor-pointer"
           whileTap={{ scale: 0.9 }}
           onClick={() => router.push(`/snaps/profile/${currentVideo.user.id}`)}
         >
@@ -604,54 +657,59 @@ const Munch: React.FC = () => {
           />
         </motion.div>
 
-        {/* Like Button */}
+        {/* Like Button - TikTok Style */}
         <motion.button
           onClick={handleLikeClick}
           className="flex flex-col items-center gap-1"
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.85 }}
         >
           <motion.div
-            className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center"
-            animate={currentVideo.has_liked ? { scale: [1, 1.1, 1] } : {}}
+            animate={currentVideo.has_liked ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 0.3 }}
           >
             <Heart
-              size={20}
-              className={`${
-                currentVideo.has_liked ? 'text-red-500 fill-red-500' : 'text-black'
+              size={32}
+              className={`lg:w-7 lg:h-7 drop-shadow-lg ${
+                currentVideo.has_liked ? 'text-red-500 fill-red-500' : 'text-white fill-white/20'
               }`}
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
           </motion.div>
-          <span className="text-white text-[11px] font-semibold">
+          <span className="text-white text-xs font-bold drop-shadow-lg">
             {formatCount(currentVideo.like_count)}
           </span>
         </motion.button>
 
-        {/* Comment Button */}
+        {/* Comment Button - TikTok Style */}
         <motion.button
           onClick={handleLoadComments}
           className="flex flex-col items-center gap-1"
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.85 }}
         >
-          <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-            <MessageCircle size={20} className="text-black" strokeWidth={2} />
-          </div>
-          <span className="text-white text-[11px] font-semibold">
+          <MessageCircle
+            size={32}
+            className="lg:w-7 lg:h-7 text-white drop-shadow-lg"
+            strokeWidth={2.5}
+            fill="white"
+            fillOpacity={0.2}
+          />
+          <span className="text-white text-xs font-bold drop-shadow-lg">
             {formatCount(currentVideo.comment_count)}
           </span>
         </motion.button>
 
-        {/* Share Button */}
+        {/* Share Button - TikTok Style */}
         <motion.button
           onClick={handleShare}
           className="flex flex-col items-center gap-1"
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.85 }}
         >
-          <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-            <ArrowUpFromLine size={20} className="text-black" strokeWidth={2} />
-          </div>
-          <span className="text-white text-[11px] font-semibold">Share</span>
+          <ArrowUpFromLine
+            size={32}
+            className="lg:w-7 lg:h-7 text-white drop-shadow-lg"
+            strokeWidth={2.5}
+          />
+          <span className="text-white text-xs font-bold drop-shadow-lg">Share</span>
         </motion.button>
 
         {/* Delete Button (only for own videos) */}
@@ -659,18 +717,20 @@ const Munch: React.FC = () => {
           <motion.button
             onClick={handleDelete}
             className="flex flex-col items-center gap-1 mt-2"
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.85 }}
           >
-            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-              <Trash2 size={20} className="text-red-500" strokeWidth={2} />
-            </div>
+            <Trash2
+              size={32}
+              className="lg:w-7 lg:h-7 text-red-500 drop-shadow-lg"
+              strokeWidth={2.5}
+            />
           </motion.button>
         )}
 
-        {/* Upload Button */}
+        {/* Upload Button - Desktop only */}
         <motion.button
           onClick={() => setShowUploadModal(true)}
-          className="flex flex-col items-center gap-1 mt-2"
+          className="hidden lg:flex flex-col items-center gap-1 mt-2"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           initial={{ opacity: 0, scale: 0 }}

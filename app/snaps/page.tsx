@@ -18,6 +18,7 @@ import UserActivityFeed from "./Sections/ActivityFeed";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { apiService } from "../lib/api";
+import { AuraBalance } from "../components/Aura/AuraBalance";
 
 // Dynamic imports for heavy components - improves initial load time
 const ExplorePage = dynamic(() => import("./SidebarSection/ExplorePage"), {
@@ -98,8 +99,6 @@ function SocialFeedPageContent() {
   const [isLoadingFollowing, setIsLoadingFollowing] = useState(false);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
-  const [topUsers, setTopUsers] = useState<any[]>([]);
-  const [isLoadingTopUsers, setIsLoadingTopUsers] = useState(false);
 
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [retweeted, setRetweeted] = useState<Set<number>>(new Set());
@@ -368,130 +367,6 @@ function SocialFeedPageContent() {
     }
   };
 
-  // Fetch top 5 users by reputation (with fallback to recent users)
-  useEffect(() => {
-    const fetchTopUsers = async () => {
-      setIsLoadingTopUsers(true);
-      try {
-        // Try to get users from reputation leaderboard first
-        try {
-          const response = await apiService.getReputationLeaderboard(5, 0);
-          console.log('📊 Reputation leaderboard response:', response);
-
-          if (response.users && Array.isArray(response.users) && response.users.length > 0) {
-            // Show users immediately with loading state for follower counts (exclude current user)
-            const usersWithPlaceholder = response.users
-              .filter(user => user.user_id !== currentUserId)
-              .map(user => ({
-                user_id: user.user_id,
-                username: user.username,
-                avatar_url: user.avatar_url,
-                score: user.score,
-                tier: user.tier,
-                followers_count: null, // null indicates loading
-                isReputationBased: true
-              }));
-            setTopUsers(usersWithPlaceholder);
-            setIsLoadingTopUsers(false);
-
-            // Fetch follower counts in background without blocking
-            response.users.forEach(async (user, index) => {
-              try {
-                const profileResponse = await apiService.getUserProfile(user.user_id);
-                const profile = profileResponse.profile as any;
-                const followers_count = profile?.followers_count || profile?.followerCount || 0;
-
-                // Update only this user's follower count
-                setTopUsers(prev => {
-                  const updated = [...prev];
-                  if (updated[index]?.user_id === user.user_id) {
-                    updated[index] = { ...updated[index], followers_count };
-                  }
-                  return updated;
-                });
-              } catch (error) {
-                console.warn(`Failed to fetch follower count for ${user.username}:`, error);
-                // Set to 0 on error
-                setTopUsers(prev => {
-                  const updated = [...prev];
-                  if (updated[index]?.user_id === user.user_id) {
-                    updated[index] = { ...updated[index], followers_count: 0 };
-                  }
-                  return updated;
-                });
-              }
-            });
-            return;
-          }
-        } catch (reputationError) {
-          console.warn('⚠️ Reputation leaderboard not available, using fallback:', reputationError);
-        }
-
-        // Fallback: Get recent/active users from search or other endpoint
-        console.log('📊 Using fallback: fetching suggested users...');
-
-        // Try to get some users - we'll search for common usernames or get from posts
-        const fallbackUsers: any[] = [];
-
-        // If we have posts, extract unique users from them
-        if (state.posts.posts.length > 0) {
-          const uniqueUsers = new Map();
-          state.posts.posts.forEach(post => {
-            // Exclude current user from suggestions
-            if (post.user_id && post.username && !uniqueUsers.has(post.user_id) && post.user_id !== currentUserId) {
-              uniqueUsers.set(post.user_id, {
-                user_id: post.user_id,
-                username: post.username,
-                avatar_url: post.avatar_url,
-                followers_count: null,
-                isReputationBased: false
-              });
-            }
-          });
-
-          // Take first 5 unique users
-          const usersArray = Array.from(uniqueUsers.values()).slice(0, 5);
-          setTopUsers(usersArray);
-          setIsLoadingTopUsers(false);
-
-          // Fetch follower counts in background
-          usersArray.forEach(async (user, index) => {
-            try {
-              const profileResponse = await apiService.getUserProfile(user.user_id);
-              const profile = profileResponse.profile as any;
-              const followers_count = profile?.followers_count || profile?.followerCount || 0;
-
-              setTopUsers(prev => {
-                const updated = [...prev];
-                if (updated[index]?.user_id === user.user_id) {
-                  updated[index] = { ...updated[index], followers_count };
-                }
-                return updated;
-              });
-            } catch (error) {
-              console.warn(`Failed to fetch follower count for ${user.username}:`, error);
-              setTopUsers(prev => {
-                const updated = [...prev];
-                if (updated[index]?.user_id === user.user_id) {
-                  updated[index] = { ...updated[index], followers_count: 0 };
-                }
-                return updated;
-              });
-            }
-          });
-        } else {
-          setIsLoadingTopUsers(false);
-        }
-
-      } catch (error) {
-        console.error("❌ Failed to load users:", error);
-        setTopUsers([]);
-        setIsLoadingTopUsers(false);
-      }
-    };
-
-    fetchTopUsers();
-  }, [state.posts.posts]);
 
   const handleTabChange = (tab: "FOR YOU" | "FOLLOWING" | "COMMUNITY") => {
     setActiveTab(tab);
@@ -601,7 +476,7 @@ function SocialFeedPageContent() {
       case "home":
       default:
         return (
-          <div className="max-w-2xl mx-auto px-2 sm:px-0 mt-14 md:mt-0">
+          <div className="max-w-2xl mx-auto px-2 sm:px-0 mt-0 md:mt-0">
             <div className="relative">
               {/* Subtle background gradient */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent pointer-events-none" />
@@ -892,7 +767,7 @@ function SocialFeedPageContent() {
         </div>
 
         {/* Main Content - Flexible center with mobile padding */}
-        <div className="flex-1 pt-20 md:pt-0 px-2 sm:px-4 pb-20 lg:pb-4">
+        <div className="flex-1 pt-14 md:pt-0 px-2 sm:px-4 pb-16 lg:pb-4">
           <div className="">{renderContent()}</div>
         </div>
 
@@ -903,16 +778,18 @@ function SocialFeedPageContent() {
 
           >
             <div className="p-6">
-              {/* Recent Activity */}
-              <div className="h-80 overflow-hidden flex flex-col justify-center items-start
+              {/* Aura Balance */}
+              <div className="h-80 overflow-hidden flex flex-col justify-start items-start
                            bg-black border-2 border-gray-700/70 rounded-2xl mb-6
                            shadow-xl shadow-black/20 backdrop-blur-sm
                            hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
                 <span className="bg-gray-700/30 border-2 border-[#6e54ff] rounded-2xl px-3 py-1 mt-3 mx-3
                               text-xs font-medium text-gray-200">
-                  Recent Activity
+                  Your Aura
                 </span>
-                <UserActivityFeed userId={session?.dbUser?.id || currentUserId} />
+                <div className="w-full p-4">
+                  <AuraBalance showDetails />
+                </div>
               </div>
 
               {/* Invite Button */}
@@ -929,81 +806,16 @@ function SocialFeedPageContent() {
   />
 </button>
 
-
-              {/* Followers Suggestions */}
-              <div className="h-80 flex flex-col justify-start items-start
+              {/* Recent Activity */}
+              <div className="h-80 overflow-hidden flex flex-col justify-center items-start
                            bg-black border-2 border-gray-700/70 rounded-2xl mb-6
                            shadow-xl shadow-black/20 backdrop-blur-sm
-                           hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                           hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
                 <span className="bg-gray-700/30 border-2 border-[#6e54ff] rounded-2xl px-3 py-1 mt-3 mx-3
                               text-xs font-medium text-gray-200">
-                  Followers Suggestions
+                  Recent Activity
                 </span>
-
-                {/* Top Users by Reputation */}
-                <div className="flex-1 w-full p-3 overflow-y-auto">
-                  {isLoadingTopUsers ? (
-                    <div className="space-y-3">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 animate-pulse">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-700"></div>
-                            <div className="flex flex-col space-y-2">
-                              <div className="h-3 w-20 bg-gray-700 rounded"></div>
-                              <div className="h-2 w-16 bg-gray-700 rounded"></div>
-                            </div>
-                          </div>
-                          <div className="h-8 w-16 bg-gray-700 rounded-lg"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : topUsers.length > 0 ? (
-                    <div className="space-y-3">
-                      {topUsers.map((user, index) => (
-                        <div key={user.user_id} className="flex items-center justify-between p-2 hover:bg-gray-700/20 rounded-lg transition-colors">
-                          <div className="flex items-center space-x-3">
-                            <div className="relative">
-                              <img
-                                src={user.avatar_url || `https://robohash.org/${user.username}.png?size=100x100`}
-                                alt={user.username}
-                                className="w-10 h-10 rounded-full object-cover border border-gray-600/30"
-                              />
-                              {user.isReputationBased && index < 3 && (
-                                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white shadow-lg">
-                                  {index + 1}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-white">{user.username}</span>
-                              <span className="text-xs text-gray-400">
-                                {user.followers_count === null ? (
-                                  <span className="animate-pulse">Loading...</span>
-                                ) : (
-                                  `${user.followers_count || 0} ${user.followers_count === 1 ? 'follower' : 'followers'}`
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => {
-                              // Navigate to user profile
-                              window.location.href = `/snaps/profile/${user.user_id}`;
-                            }}
-                            className="bg-[#6e54ff] hover:bg-[#5940cc] text-white text-xs px-3 py-1 rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500 text-sm">
-                      <p className="mb-2">Unable to load top users</p>
-                      <p className="text-xs">Check console for details</p>
-                    </div>
-                  )}
-                </div>
+                <UserActivityFeed userId={session?.dbUser?.id || currentUserId} />
               </div>
             </div>
           </div>

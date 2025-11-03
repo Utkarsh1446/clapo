@@ -10,7 +10,8 @@ import {
   clearAuraCache,
   canCreatePost as checkCanPost,
   incrementPostCount as apiIncrementPostCount,
-  calculateTodayStats
+  calculateTodayStats,
+  initializeAuraForUser
 } from '../lib/auraApi';
 import { AuraStats, AuraTransaction } from '../types/aura';
 
@@ -61,16 +62,28 @@ export function AuraProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       console.log('📡 AuraProvider: Fetching Aura from API...');
-      const auraData = await getUserAuraBalance(userId);
+      let auraData = await getUserAuraBalance(userId);
       console.log('📊 AuraProvider: Received Aura data:', auraData);
+
+      // If no Aura found (new user), try to initialize it
+      if (!auraData) {
+        console.log('🆕 AuraProvider: No Aura found, attempting to initialize for new user...');
+        auraData = await initializeAuraForUser(userId);
+
+        if (auraData) {
+          console.log('✅ AuraProvider: Aura initialized successfully for new user');
+        } else {
+          console.error('❌ AuraProvider: Failed to initialize Aura - backend may need to support this');
+        }
+      }
 
       if (auraData) {
         setAura(auraData);
         setCachedAura(userId, auraData);
         console.log('✅ AuraProvider: Aura data set successfully');
       } else {
-        console.error('❌ AuraProvider: No Aura data received from API');
-        setError('Failed to load Aura balance');
+        console.error('❌ AuraProvider: No Aura data available');
+        setError('Aura system not available for this user');
       }
     } catch (err) {
       console.error('❌ AuraProvider: Error fetching Aura:', err);

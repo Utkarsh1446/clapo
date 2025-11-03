@@ -59,52 +59,80 @@ export function AuraBalance({ compact = false, showDetails = false }: AuraBalanc
   }
 
   return (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-800/50 border border-gray-700/50">
-      <div
-        className="flex items-center justify-center w-12 h-12 rounded-xl"
-        style={{
-          background: `linear-gradient(135deg, ${tierColor}40, ${tierColor}20)`,
-          border: `2px solid ${tierColor}`
-        }}
-      >
-        <Sparkles className="w-6 h-6" style={{ color: tierColor }} />
-      </div>
-
-      <div className="flex-1">
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-bold text-white">
-            {aura.balance.toLocaleString()}
-          </span>
-          <span className="text-sm text-gray-400">Aura</span>
-        </div>
-
-        <div className="flex items-center gap-2 mt-1">
-          <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+    <div className="relative w-full">
+      <div className="flex flex-col gap-4">
+        {/* Top Section: Icon + Balance */}
+        <div className="flex items-center gap-4">
+          {/* Icon */}
+          <div
+            className="flex items-center justify-center w-14 h-14 rounded-xl"
             style={{
-              background: `${tierColor}30`,
-              color: tierColor
+              background: `linear-gradient(135deg, ${tierColor}30, ${tierColor}15)`,
+              border: `2px solid ${tierColor}80`
             }}
           >
-            {aura.tierName}
-          </span>
-          <span className="text-xs text-gray-500">
-            {aura.reachMultiplier}x reach
-          </span>
+            <Sparkles className="w-7 h-7" style={{ color: tierColor }} />
+          </div>
+
+          {/* Balance & Info */}
+          <div className="flex-1">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-3xl font-bold text-white">
+                {aura.balance.toLocaleString()}
+              </span>
+              <span className="text-sm text-gray-400 font-medium">Aura</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xs font-bold px-3 py-1 rounded-full"
+                style={{
+                  background: `${tierColor}30`,
+                  color: tierColor,
+                  border: `1px solid ${tierColor}50`
+                }}
+              >
+                {aura.tierName}
+              </span>
+              <span
+                className="text-xs font-semibold px-2 py-1 rounded-md"
+                style={{
+                  color: tierColor,
+                  background: `${tierColor}20`
+                }}
+              >
+                {aura.reachMultiplier}x reach
+              </span>
+            </div>
+          </div>
         </div>
 
+        {/* Progress Section */}
         {showDetails && aura.nextTier && (
-          <div className="mt-2">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>Progress to {AURA_TIER_NAMES[aura.nextTier]}</span>
-              <span>{Math.round(aura.progressToNextTier || 0)}%</span>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-medium text-gray-400">
+                Next: <span style={{ color: tierColor }}>{AURA_TIER_NAMES[aura.nextTier]}</span>
+              </span>
+              <span
+                className="text-xs font-bold px-2 py-0.5 rounded"
+                style={{
+                  color: tierColor,
+                  background: `${tierColor}20`
+                }}
+              >
+                {Math.round(aura.progressToNextTier || 0)}%
+              </span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-1.5">
+
+            {/* Simplified Progress Bar */}
+            <div className="relative w-full bg-gray-800/50 rounded-full h-2 overflow-hidden border border-gray-700/50">
               <div
-                className="h-1.5 rounded-full transition-all duration-300"
+                className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${aura.progressToNextTier || 0}%`,
-                  backgroundColor: tierColor
+                  background: `linear-gradient(90deg, ${tierColor}90, ${tierColor})`,
+                  boxShadow: `0 0 8px ${tierColor}50`
                 }}
               />
             </div>

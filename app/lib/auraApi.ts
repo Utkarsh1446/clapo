@@ -424,3 +424,36 @@ export function calculateTodayStats(transactions: AuraTransaction[]): {
 
   return { earned, spent };
 }
+
+/**
+ * Initialize Aura for a new user
+ * This will create the initial Aura balance of 100
+ */
+export async function initializeAuraForUser(userId: string): Promise<AuraStats | null> {
+  try {
+    console.log('🔧 Initializing Aura for new user:', userId);
+
+    // Try to update balance with initial amount
+    const result = await updateAuraBalance(
+      userId,
+      100, // Starting balance
+      AuraTransactionType.INITIAL_BALANCE,
+      undefined,
+      undefined,
+      { reason: 'New user signup' }
+    );
+
+    if (result) {
+      console.log('✅ Aura initialized successfully:', result);
+
+      // Fetch the newly created balance
+      return await getUserAuraBalance(userId);
+    }
+
+    console.warn('⚠️ Failed to initialize Aura - backend may not support initialization');
+    return null;
+  } catch (error) {
+    console.error('❌ Error initializing Aura:', error);
+    return null;
+  }
+}

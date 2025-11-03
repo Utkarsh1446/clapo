@@ -405,7 +405,7 @@ const goToNextStory = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto pt-2 lg:pt-0">
       {/* Stories Grid - Compact & Mobile Responsive */}
       <motion.div
         className={`flex gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 ${
