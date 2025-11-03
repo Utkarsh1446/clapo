@@ -464,7 +464,7 @@ const Munch: React.FC = () => {
 
   if (!currentVideo) {
     return (
-      <div className="relative flex flex-col lg:flex-row items-center justify-center gap-6 w-full h-[calc(100vh-7rem)] lg:h-auto lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
+      <div className="relative flex flex-col lg:flex-row items-center justify-center gap-6 w-full h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] lg:h-auto lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
         <div className="w-full h-full lg:h-[800px] lg:w-[456px] bg-black lg:rounded-2xl lg:border-2 border-gray-700/70 lg:shadow-xl lg:shadow-black/20 lg:p-1.5 overflow-hidden flex items-center justify-center relative">
           {/* Upload Modal */}
           <AnimatePresence>
@@ -516,7 +516,7 @@ const Munch: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-7rem)] lg:h-auto flex flex-col lg:flex-row items-center justify-center gap-0 lg:gap-6 lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
+    <div className="relative w-full h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] lg:h-auto flex flex-col lg:flex-row items-center justify-center gap-0 lg:gap-6 lg:pt-6" style={{ margin: '0 auto', maxWidth: '540px' }}>
       <motion.div
         ref={containerRef}
         className="relative w-full h-full lg:h-[800px] lg:w-[456px]"
@@ -643,7 +643,7 @@ const Munch: React.FC = () => {
       </motion.div>
 
       {/* Action Buttons - TikTok Style: Mobile overlay, Desktop external */}
-      <div className="absolute lg:relative bottom-24 lg:bottom-0 right-3 lg:right-0 flex flex-col items-center gap-5 lg:gap-4 lg:pt-64 z-30">
+      <div className="absolute lg:relative bottom-20 lg:bottom-0 right-2 lg:right-0 flex flex-col items-center gap-3 lg:gap-4 lg:pt-64 z-30">
         {/* User Avatar Button - Hidden on mobile */}
         <motion.div
           className="hidden lg:block relative cursor-pointer"
@@ -660,7 +660,7 @@ const Munch: React.FC = () => {
         {/* Like Button - TikTok Style */}
         <motion.button
           onClick={handleLikeClick}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-0.5"
           whileTap={{ scale: 0.85 }}
         >
           <motion.div
@@ -668,14 +668,14 @@ const Munch: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <Heart
-              size={32}
+              size={28}
               className={`lg:w-7 lg:h-7 drop-shadow-lg ${
                 currentVideo.has_liked ? 'text-red-500 fill-red-500' : 'text-white fill-white/20'
               }`}
               strokeWidth={2.5}
             />
           </motion.div>
-          <span className="text-white text-xs font-bold drop-shadow-lg">
+          <span className="text-white text-[10px] lg:text-xs font-bold drop-shadow-lg">
             {formatCount(currentVideo.like_count)}
           </span>
         </motion.button>
@@ -683,17 +683,17 @@ const Munch: React.FC = () => {
         {/* Comment Button - TikTok Style */}
         <motion.button
           onClick={handleLoadComments}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-0.5"
           whileTap={{ scale: 0.85 }}
         >
           <MessageCircle
-            size={32}
+            size={28}
             className="lg:w-7 lg:h-7 text-white drop-shadow-lg"
             strokeWidth={2.5}
             fill="white"
             fillOpacity={0.2}
           />
-          <span className="text-white text-xs font-bold drop-shadow-lg">
+          <span className="text-white text-[10px] lg:text-xs font-bold drop-shadow-lg">
             {formatCount(currentVideo.comment_count)}
           </span>
         </motion.button>
@@ -701,46 +701,46 @@ const Munch: React.FC = () => {
         {/* Share Button - TikTok Style */}
         <motion.button
           onClick={handleShare}
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-0.5"
           whileTap={{ scale: 0.85 }}
         >
           <ArrowUpFromLine
-            size={32}
+            size={28}
             className="lg:w-7 lg:h-7 text-white drop-shadow-lg"
             strokeWidth={2.5}
           />
-          <span className="text-white text-xs font-bold drop-shadow-lg">Share</span>
+          <span className="text-white text-[10px] lg:text-xs font-bold drop-shadow-lg">Share</span>
         </motion.button>
 
         {/* Delete Button (only for own videos) */}
         {currentUserId === currentVideo.user.id && (
           <motion.button
             onClick={handleDelete}
-            className="flex flex-col items-center gap-1 mt-2"
+            className="flex flex-col items-center gap-0.5"
             whileTap={{ scale: 0.85 }}
           >
             <Trash2
-              size={32}
+              size={28}
               className="lg:w-7 lg:h-7 text-red-500 drop-shadow-lg"
               strokeWidth={2.5}
             />
           </motion.button>
         )}
 
-        {/* Upload Button - Desktop only */}
+        {/* Upload Button - Now visible on mobile too */}
         <motion.button
           onClick={() => setShowUploadModal(true)}
-          className="hidden lg:flex flex-col items-center gap-1 mt-2"
+          className="flex flex-col items-center gap-0.5 mt-1"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#6E54FF' }}>
-            <Plus size={20} className="text-white" strokeWidth={2} />
+          <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#6E54FF' }}>
+            <Plus size={18} className="lg:w-5 lg:h-5 text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-white text-[11px] font-semibold">Upload</span>
+          <span className="text-white text-[10px] lg:text-[11px] font-semibold drop-shadow-lg">Upload</span>
         </motion.button>
       </div>
 

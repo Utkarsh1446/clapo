@@ -63,12 +63,12 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full top-0 p-4 md:p-6 flex items-center justify-between font-mono">
+      <nav className="w-full top-0 p-3 md:p-4 flex items-center justify-between font-mono">
         {/* Mobile + iPad Menu Drawer (visible until lg) */}
         <div className="lg:hidden z-50">
           <Drawer>
-            <DrawerTrigger className="p-2 text-white">
-              <Menu size={24} />
+            <DrawerTrigger className="p-1.5 text-white">
+              <Menu size={20} className="md:w-5 md:h-5" />
             </DrawerTrigger>
             <DrawerContent className="bg-black text-white border-none mb-20 rounded-t-[40px]">
               <DrawerHeader>
@@ -102,9 +102,9 @@ export default function Navbar() {
           <Image
             src="/navlogo.png"
             alt="Clapo Logo"
-            width={120}
-            height={40}
-            className="object-contain h-6 md:h-8 w-auto"
+            width={100}
+            height={32}
+            className="object-contain h-5 md:h-6 lg:h-7 w-auto"
           />
         </div>
 
@@ -158,7 +158,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile + iPad Connect Button */}
-        <div className="flex lg:hidden justify-center gap-2 items-center">
+        <div className="flex lg:hidden justify-center gap-1.5 items-center">
           {isLoggedIn && <AuraBalance compact />}
           <button
             style={{
@@ -166,12 +166,12 @@ export default function Navbar() {
                 "0px 1px 0.5px 0px rgba(255, 255, 255, 0.50) inset, 0px 1px 2px 0px rgba(161, 87, 19, 0.50), 0px 0px 0px 1px #F97316",
               backgroundColor: "#6C54F8",
               color: "white",
-              padding: "8px 16px",
+              padding: "6px 12px",
             }}
             onClick={() => openDialog("x")}
-            className="text-[#E4761B] bg-white rounded-full px-3 py-1 text-xs font-bold shadow hover:text-white hover:bg-[#E4761B] transition"
+            className="text-[#E4761B] bg-white rounded-full text-[10px] md:text-xs font-bold shadow hover:text-white hover:bg-[#E4761B] transition"
           >
-            {isLoggedIn ? session.dbUser?.username || "Connected" : "Connect"}
+            {isLoggedIn ? (session.dbUser?.username?.slice(0, 8) || "Connected") : "Connect"}
           </button>
         </div>
       </nav>
