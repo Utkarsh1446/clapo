@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { apiService } from "../lib/api";
 import { AuraBalance } from "../components/Aura/AuraBalance";
+import { useAuth } from "../hooks/useAuth";
 
 // Dynamic imports for heavy components - improves initial load time
 const ExplorePage = dynamic(() => import("./SidebarSection/ExplorePage"), {
@@ -104,10 +105,17 @@ function SocialFeedPageContent() {
   const [retweeted, setRetweeted] = useState<Set<number>>(new Set());
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [hasInitializedData, setHasInitializedData] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const { data: session, status } = useSession();
   const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy();
+
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId, isInitialized, privyReady: reduxPrivyReady, privyAuthenticated: reduxPrivyAuthenticated } = useAuth();
+
+  // Support both NextAuth (legacy) and Privy auth
+  const currentUserId = status === "authenticated" && session?.dbUser?.id
+    ? session.dbUser.id
+    : reduxUserId;
   const {
     state,
     fetchPosts,
@@ -231,42 +239,38 @@ function SocialFeedPageContent() {
         return;
       }
 
-      // Handle Privy authentication
-      if (privyAuthenticated && privyUser && privyReady && !hasInitializedData) {
-        console.log("📊 Loading data for Privy user:", privyUser.id);
-        try {
-          // Fetch user from backend using Privy ID
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log("✅ Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-            // Save to localStorage for AuraProvider
-            localStorage.setItem('userId', data.user.id);
-            fetchPosts(data.user.id);
-            fetchNotifications(data.user.id);
-            fetchActivities(data.user.id);
-            setHasInitializedData(true);
-          } else {
-            console.log("❌ User not found in backend, redirecting to signup");
-            window.location.href = '/SignIn';
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-        }
+      // Wait for Redux auth to initialize before making decisions
+      if (!isInitialized) {
+        console.log("⏳ Waiting for auth to initialize...");
         return;
       }
 
-      if (status === "unauthenticated" && !privyAuthenticated) {
+      // Handle Privy authentication - use Redux store
+      if (privyAuthenticated && privyReady && reduxUserId && !hasInitializedData) {
+        console.log("📊 Loading data from Redux for user:", reduxUserId);
+        // Save to localStorage for AuraProvider
+        localStorage.setItem('userId', reduxUserId);
+        fetchPosts(reduxUserId);
+        fetchNotifications(reduxUserId);
+        fetchActivities(reduxUserId);
+        setHasInitializedData(true);
+        return;
+      }
+
+      // Only redirect if auth is fully initialized and user is truly not found
+      if (isInitialized && privyAuthenticated && privyReady && !reduxUserId) {
+        console.log("❌ User not found in backend, redirecting to signup");
+        window.location.href = '/SignIn';
+        return;
+      }
+
+      if (status === "unauthenticated" && !privyAuthenticated && isInitialized) {
         setHasInitializedData(false);
       }
     };
 
     initializeData();
-  }, [session, status, privyAuthenticated, privyUser, privyReady, hasInitializedData]);
+  }, [session, status, privyAuthenticated, privyUser, privyReady, hasInitializedData, isInitialized, reduxUserId]);
 
   // Removed auto-refresh to prevent NEW posts from disappearing
   // Users can manually refresh when they want to see the latest posts
@@ -698,7 +702,8 @@ function SocialFeedPageContent() {
     }
   };
 
-  if (status === "loading" || !privyReady) {
+  // Show loading while auth is initializing
+  if (status === "loading" || !privyReady || !isInitialized) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner size="w-12 h-12" />
@@ -706,8 +711,8 @@ function SocialFeedPageContent() {
     );
   }
 
-  // Check authentication: Either NextAuth OR Privy
-  const isAuthenticated = (status === "authenticated" && session?.dbUser) || privyAuthenticated;
+  // Check authentication: Either NextAuth OR Privy with backend user
+  const isAuthenticated = (status === "authenticated" && session?.dbUser) || (privyAuthenticated && reduxUserId);
 
   // Don't render main content if user is not authenticated
   if (!isAuthenticated) {
@@ -717,13 +722,17 @@ function SocialFeedPageContent() {
       hasDbUser: !!session?.dbUser,
       privyAuthenticated,
       privyReady,
-      hasPrivyUser: !!privyUser
+      hasPrivyUser: !!privyUser,
+      reduxUserId,
+      isInitialized
     });
 
-    // Redirect to SignIn page for Privy authentication
-    console.log("🚀 Redirecting unauthenticated user to /SignIn");
-    if (typeof window !== 'undefined') {
-      window.location.href = '/SignIn';
+    // Only redirect if truly not authenticated (auth is initialized and no user found)
+    if (isInitialized) {
+      console.log("🚀 Redirecting unauthenticated user to /SignIn");
+      if (typeof window !== 'undefined') {
+        window.location.href = '/SignIn';
+      }
     }
 
     return (

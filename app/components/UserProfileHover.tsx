@@ -12,6 +12,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { giveReputation } from '@/app/lib/reputationApi'
 import ReputationBadge from '@/app/components/ReputationBadge'
 import { apiService } from '@/app/lib/api'
+import { useAuth } from '@/app/hooks/useAuth'
 
 interface UserProfileHoverProps {
   userId: string
@@ -63,37 +64,20 @@ export function UserProfileHover({
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const { data: session, status } = useSession()
   const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { getUserProfile, getUserFollowers, getUserFollowing, followUser, unfollowUser } = useApi()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const isOwnProfile = currentUserId === userId
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId } = useAuth()
 
-  // Initialize currentUserId from either NextAuth or Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (status === "authenticated" && session?.dbUser?.id) {
-        setCurrentUserId(session.dbUser.id);
-        return;
-      }
-      if (privyAuthenticated && privyUser && privyReady) {
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-          if (data.exists && data.user?.id) {
-            setCurrentUserId(data.user.id);
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-        }
-      }
-    };
-    initializeUser();
-  }, [session, status, privyAuthenticated, privyUser, privyReady])
+  // Support both NextAuth (legacy) and Privy auth
+  const currentUserId = status === "authenticated" && session?.dbUser?.id
+    ? session.dbUser.id
+    : reduxUserId
+
+  const isOwnProfile = currentUserId === userId
 
   useEffect(() => {
     return () => {

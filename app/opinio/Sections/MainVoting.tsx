@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useOpinioContext } from "@/app/Context/OpinioContext";
 import OpinioWalletConnect from "@/app/components/OpinioWalletConnect";
 import { useRouter } from "next/navigation";
-import { MarketProbabilities } from "@/app/components/MarketProbabilitiesslug";
+import { MarketProbabilities } from "@/app/components/MarketProbabilities";
 
 
 const navItems = [

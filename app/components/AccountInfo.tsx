@@ -5,6 +5,7 @@ import { LogOut, X, Mail, Wallet, User } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useApi } from '../Context/ApiProvider'
+import { useAuth } from '../hooks/useAuth'
 
 interface AccountInfoProps {
   onClose?: () => void
@@ -113,63 +114,27 @@ export default function AccountInfo({ onClose }: AccountInfoProps) {
     return () => clearTimeout(maxLoadingTimeout)
   }, [loading, authenticated, privyUser, currentUser])
 
-  // Initialize user ID from Privy
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId } = useAuth()
+
+  // Use Redux user ID if available, otherwise fallback to basic Privy info
   useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        try {
-          setLoading(true)
-
-          // Add timeout for initial fetch
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 8000)
-
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`,
-            { signal: controller.signal }
-          )
-
-          clearTimeout(timeoutId)
-          const data = await response.json()
-
-          if (data.exists && data.user?.id) {
-            console.log('AccountInfo - Found user ID:', data.user.id)
-            setCurrentUserId(data.user.id)
-          } else {
-            console.warn('AccountInfo - User not found in backend')
-            // Show basic Privy info if backend doesn't have user
-            if (privyUser) {
-              const displayName = getPrivyDisplayName()
-              setCurrentUser({
-                username: displayName,
-                name: displayName,
-                avatar_url: getPrivyAvatar(),
-                account_type: 'individual'
-              })
-            }
-            setLoading(false)
-          }
-        } catch (error) {
-          console.error('AccountInfo - Error fetching user ID:', error)
-          // Show basic Privy info on error
-          if (privyUser) {
-            const displayName = getPrivyDisplayName()
-            setCurrentUser({
-              username: displayName,
-              name: displayName,
-              avatar_url: getPrivyAvatar(),
-              account_type: 'individual'
-            })
-          }
-          setLoading(false)
-        }
-      } else if (!authenticated) {
-        setLoading(false)
-      }
+    if (reduxUserId) {
+      setCurrentUserId(reduxUserId)
+    } else if (authenticated && privyUser) {
+      // Show basic Privy info if backend user not available
+      const displayName = getPrivyDisplayName()
+      setCurrentUser({
+        username: displayName,
+        name: displayName,
+        avatar_url: getPrivyAvatar(),
+        account_type: 'individual'
+      })
+      setLoading(false)
+    } else {
+      setLoading(false)
     }
-
-    initializeUser()
-  }, [authenticated, privyUser, ready])
+  }, [reduxUserId, authenticated, privyUser])
 
   // Fetch profile using getUserProfile (same as ProfilePage)
   useEffect(() => {

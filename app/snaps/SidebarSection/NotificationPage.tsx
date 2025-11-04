@@ -12,54 +12,19 @@ import { useRouter } from 'next/navigation';
 import { PostPopupModal } from '../../components/PostPopupModal';
 import MyMentions from '../../components/MyMentions';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../hooks/useAuth';
 
 const NotificationPage = () => {
   const { data: session } = useSession();
   const { authenticated: privyAuthenticated, user: privyUser } = usePrivy();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'notifications' | 'mentions'>('notifications');
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Initialize currentUserId from either NextAuth or Privy
-  useEffect(() => {
-    const initUserId = async () => {
-      console.log('🔍 NotificationPage: Initializing user ID', {
-        hasSession: !!session,
-        sessionUserId: session?.dbUser?.id,
-        privyAuthenticated,
-        privyUserId: privyUser?.id
-      });
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId } = useAuth();
 
-      // Try NextAuth first
-      if (session?.dbUser?.id) {
-        console.log('✅ NotificationPage: Using NextAuth user ID:', session.dbUser.id);
-        setCurrentUserId(session.dbUser.id);
-        return;
-      }
-
-      // Try Privy if authenticated
-      if (privyAuthenticated && privyUser) {
-        try {
-          console.log('🔍 NotificationPage: Fetching Privy user from backend...');
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log('✅ NotificationPage: Using Privy user ID:', data.user.id);
-            setCurrentUserId(data.user.id);
-          } else {
-            console.log('❌ NotificationPage: Privy user not found in backend');
-          }
-        } catch (error) {
-          console.error('❌ NotificationPage: Error fetching Privy user:', error);
-        }
-      }
-    };
-
-    initUserId();
-  }, [session, privyAuthenticated, privyUser]);
+  // Support both NextAuth (legacy) and Privy auth
+  const currentUserId = session?.dbUser?.id || reduxUserId;
 
   const {
     notifications,

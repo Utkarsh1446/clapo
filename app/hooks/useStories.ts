@@ -1,45 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useState, useCallback } from 'react';
 import { StoriesApiService, Story } from '@/app/lib/storiesApi';
+import { useAuth } from './useAuth';
 
 export const useStories = () => {
-  const { authenticated, user: privyUser, ready } = usePrivy();
+  // Get auth from centralized Redux store
+  const { currentUserId } = useAuth();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // Initialize user ID from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        console.log("📊 useStories: Loading user from Privy:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log("✅ useStories: Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-            // Save to localStorage for AuraProvider
-            localStorage.setItem('userId', data.user.id);
-          } else {
-            console.log("❌ useStories: User not found in backend");
-            setCurrentUserId(null);
-          }
-        } catch (error) {
-          console.error("❌ useStories: Error fetching Privy user:", error);
-          setCurrentUserId(null);
-        }
-      } else {
-        setCurrentUserId(null);
-      }
-    };
-
-    initializeUser();
-  }, [authenticated, privyUser, ready]);
 
   // Fetch stories from users that the current user is following
   const fetchFollowingStories = useCallback(async (limit: number = 50, silent: boolean = false) => {

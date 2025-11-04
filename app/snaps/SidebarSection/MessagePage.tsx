@@ -5,6 +5,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useApi } from '../../Context/ApiProvider';
 import { MessageCircle, Users, Plus, Search, ChevronDown, Hash, Dot, ArrowLeft, UserPlus, MessageSquare, Eye, Clock, User } from 'lucide-react';
 import { useSocket } from '../../hooks/useSocket';
+import { useAuth } from '@/app/hooks/useAuth';
 import { MessageList } from '../../components/MessageList';
 import { MessageInput } from '../../components/MessageInput';
 import { CreateCommunityModal } from '@/app/components/CreateCommunityModal';
@@ -22,7 +23,6 @@ const DMSection = dynamic(() => import('@/app/components/DMSection').then(mod =>
 
 export default function MessagePage() {
   const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const {
     state,
     dispatch,
@@ -37,29 +37,9 @@ export default function MessagePage() {
     sendCommunityMessage
   } = useApi();
 
-  // Initialize currentUserId from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (privyAuthenticated && privyUser && privyReady) {
-        console.log("📊 Loading messages for Privy user:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-          if (data.exists && data.user?.id) {
-            console.log("✅ Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-          } else {
-            console.log("❌ User not found in backend");
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-        }
-      }
-    };
-    initializeUser();
-  }, [privyAuthenticated, privyUser, privyReady]);
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId } = useAuth();
+  const currentUserId = reduxUserId;
 
   const handleStartChatWithUser = async (user: { id: string; username: string }) => {
     if (!currentUserId) {

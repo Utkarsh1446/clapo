@@ -25,6 +25,7 @@ import MentionAutocomplete from '@/app/components/MentionAutocomplete'
 import { getMentionTriggerInfo, replaceMentionText, extractMentions } from '@/app/lib/mentionUtils'
 import { useAura } from '@/app/Context/AppProviders'
 import { DailyPostLimitIndicator } from '@/app/components/Aura/DailyPostLimitIndicator'
+import { useAppSelector } from '@/app/store/hooks'
 
 // Toast Component
 const Toast = ({ 
@@ -89,42 +90,14 @@ export function SnapComposer({ close }: { close: () => void }) {
   
   const { createPost, fetchPosts } = useApi();
   const { createPostToken, isConnected, connectWallet, isConnecting, address } = usePostToken();
-  const { authenticated, user: privyUser, ready } = usePrivy();
   const { getUserProfile, updateUserProfile } = useApi()
   const { canPost: canPostAura, postsRemaining, incrementPostCount } = useAura();
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<any>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  // Initialize user ID from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        console.log("📊 SnapComposer: Loading user from Privy:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log("✅ SnapComposer: Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-          } else {
-            console.log("❌ SnapComposer: User not found in backend");
-            setCurrentUserId(null);
-          }
-        } catch (error) {
-          console.error("❌ SnapComposer: Error fetching Privy user:", error);
-          setCurrentUserId(null);
-        }
-      } else {
-        setCurrentUserId(null);
-      }
-    };
-
-    initializeUser();
-  }, [authenticated, privyUser, ready]);
+  // Get auth state from Redux store - no more API calls!
+  const { backendUser } = useAppSelector((state) => state.auth)
+  const currentUserId = backendUser?.id || null
 
   useEffect(() => {
     const fetchProfile = async () => {

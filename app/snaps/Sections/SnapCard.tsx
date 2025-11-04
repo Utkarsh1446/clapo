@@ -18,6 +18,7 @@ import ReputationBadge from '../../components/ReputationBadge'
 import { usePostTokenPrice } from '@/app/hooks/useGlobalPrice'
 import { renderTextWithMentions } from '@/app/lib/mentionUtils.tsx'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/app/hooks/useAuth'
 
 type Props = {
   post: Post | ApiPost
@@ -47,33 +48,15 @@ export default function SnapCard({ post, liked, bookmarked, retweeted, onLike, o
 
   const { likePost, unlikePost, retweetPost, bookmarkPost, unbookmarkPost, viewPost, addComment, getPostComments, state } = useApi()
   const { data: session, status } = useSession()
-  const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const router = useRouter()
 
-  // Initialize currentUserId from either NextAuth or Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (status === "authenticated" && session?.dbUser?.id) {
-        setCurrentUserId(session.dbUser.id);
-        return;
-      }
-      if (privyAuthenticated && privyUser && privyReady) {
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-          if (data.exists && data.user?.id) {
-            setCurrentUserId(data.user.id);
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-        }
-      }
-    };
-    initializeUser();
-  }, [session, status, privyAuthenticated, privyUser, privyReady]);
+  // Get auth state from Redux store - no more API calls!
+  const { currentUserId: reduxUserId } = useAuth()
+
+  // Support both NextAuth (legacy) and Privy auth
+  const currentUserId = status === "authenticated" && session?.dbUser?.id
+    ? session.dbUser.id
+    : reduxUserId
 
   // Check if it's an API post by multiple indicators
   const isApiPost = 'user_id' in post || 'media_url' in post || ('username' in post && 'avatar_url' in post)

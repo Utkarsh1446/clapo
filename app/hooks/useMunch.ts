@@ -1,46 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useState, useCallback } from 'react';
 import { MunchApiService, MunchVideo, MunchComment } from '@/app/lib/munchApi';
+import { useAuth } from './useAuth';
 
 export const useMunch = () => {
-  const { authenticated, user: privyUser, ready } = usePrivy();
+  // Get auth from centralized Redux store
+  const { currentUserId } = useAuth();
   const [videos, setVideos] = useState<MunchVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-
-  // Initialize user ID from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        console.log("📊 useMunch: Loading user from Privy:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log("✅ useMunch: Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-            // Save to localStorage for AuraProvider
-            localStorage.setItem('userId', data.user.id);
-          } else {
-            console.log("❌ useMunch: User not found in backend");
-            setCurrentUserId(null);
-          }
-        } catch (error) {
-          console.error("❌ useMunch: Error fetching Privy user:", error);
-          setCurrentUserId(null);
-        }
-      } else {
-        setCurrentUserId(null);
-      }
-    };
-
-    initializeUser();
-  }, [authenticated, privyUser, ready]);
 
   // Fetch munch feed
   const fetchMunchFeed = useCallback(async (limit: number = 20, offset: number = 0) => {

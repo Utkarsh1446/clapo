@@ -8,6 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { renderTextWithMentions } from "@/app/lib/mentionUtils";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/useAuth";
 
 type Story = {
   id: string;
@@ -40,7 +41,6 @@ const Stories: React.FC = () => {
   const { authenticated, ready, user: privyUser } = usePrivy();
   const { stories, loading, error, fetchFollowingStories, recordStoryView, getStoryViewers, deleteStory } = useStories();
   const router = useRouter();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(0);
   const [currentStoryIndex, setCurrentStoryIndex] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -57,25 +57,9 @@ const Stories: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const bottomSheetRef = useRef<HTMLDivElement | null>(null);
 
-  // Get current user ID from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-          if (data.exists && data.user?.id) {
-            setCurrentUserId(data.user.id);
-          }
-        } catch (error) {
-          console.error("❌ Stories: Error fetching Privy user:", error);
-        }
-      }
-    };
-    initializeUser();
-  }, [authenticated, privyUser, ready]);
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId } = useAuth()
+  const currentUserId = reduxUserId
 
   // Group stories by user
   const groupedStories: GroupedStory[] = React.useMemo(() => {

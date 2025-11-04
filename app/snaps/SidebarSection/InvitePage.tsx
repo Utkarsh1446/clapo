@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import { usePrivy } from '@privy-io/react-auth'
 import { AccessTokenManager } from '@/app/components/AccessTokenManager'
+import { useAuth } from '@/app/hooks/useAuth'
 
 interface InviteCode {
   id: string
@@ -19,55 +20,33 @@ export default function InvitePage() {
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
   const [totalCodes] = useState(50)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUsername, setCurrentUsername] = useState<string | null>(null)
   const [hasCreatorToken, setHasCreatorToken] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
 
   const { data: session, status } = useSession()
   const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy()
 
-  // Get current user data
+  // Get auth from centralized Redux store
+  const { currentUserId: reduxUserId, backendUser } = useAuth()
+
+  // Support both NextAuth (legacy) and Privy auth
+  const currentUserId = session?.dbUser?.id || reduxUserId
+  const currentUsername = session?.dbUser?.username || backendUser?.username || 'User'
+
+  // Check for creator token when userId is available
   useEffect(() => {
-    const getUserData = async () => {
-      setIsLoadingUser(true)
-
-      // Handle NextAuth session
-      if (status === 'authenticated' && session?.dbUser?.id) {
-        setCurrentUserId(session.dbUser.id)
-        setCurrentUsername(session.dbUser.username || 'User')
-        await checkForCreatorToken(session.dbUser.id)
+    const initializeCreatorToken = async () => {
+      if (currentUserId) {
+        setIsLoadingUser(true)
+        await checkForCreatorToken(currentUserId)
         setIsLoadingUser(false)
-        return
-      }
-
-      // Handle Privy authentication
-      if (privyAuthenticated && privyUser && privyReady) {
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          )
-          const data = await response.json()
-
-          if (data.exists && data.user?.id) {
-            setCurrentUserId(data.user.id)
-            setCurrentUsername(data.user.username || 'User')
-            await checkForCreatorToken(data.user.id)
-          }
-        } catch (error) {
-          console.error('Error fetching Privy user:', error)
-        }
-        setIsLoadingUser(false)
-        return
-      }
-
-      if (status === 'unauthenticated' && !privyAuthenticated) {
+      } else {
         setIsLoadingUser(false)
       }
     }
 
-    getUserData()
-  }, [session, status, privyAuthenticated, privyUser, privyReady])
+    initializeCreatorToken()
+  }, [currentUserId])
 
   // Check if user has created a creator token
   const checkForCreatorToken = async (userId: string) => {

@@ -8,6 +8,7 @@ import { X, User, Users, MapPin, Calendar, Link, Grid, Heart, MessageCircle, Sha
 import { usePrivy } from '@privy-io/react-auth'
 import { useApi } from '@/app/Context/ApiProvider'
 import { useRouter } from 'next/navigation'
+import { useAppSelector } from '@/app/store/hooks'
 import Sidebar from '../../Sections/Sidebar'
 import { CreatorTokenDisplay } from '@/app/components/CreatorTokenDisplay'
 import { useCreatorToken } from '@/app/hooks/useCreatorToken'
@@ -122,35 +123,15 @@ export default function UserProfileClient({ userId }: UserProfileClientProps) {
   const [creatorTokenUserId, setCreatorTokenUserId] = useState<string | null>(null)
   const [showTradingModal, setShowTradingModal] = useState(false)
   
-  const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  // Get auth state from Redux store - no more API calls!
+  const { backendUser } = useAppSelector((state) => state.auth)
+  const currentUserId = backendUser?.id || null
+
   const { getUserProfile, getUserFollowers, getUserFollowing, followUser, unfollowUser } = useApi()
   const { checkCreatorExists, isConnected, address } = useCreatorToken()
   const router = useRouter()
 
   const isOwnProfile = currentUserId === userId
-
-  // Initialize currentUserId from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (privyAuthenticated && privyUser && privyReady) {
-        console.log("📊 Profile page - Privy user:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-          if (data.exists && data.user?.id) {
-            console.log("✅ Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-        }
-      }
-    };
-    initializeUser();
-  }, [privyAuthenticated, privyUser, privyReady])
 
   useEffect(() => {
     if (userId) {

@@ -16,6 +16,7 @@ import ReputationBadge from "@/app/components/ReputationBadge"
 import ReputationHistoryModal from "@/app/components/ReputationHistoryModal"
 import { MunchApiService, MunchVideo } from "@/app/lib/munchApi"
 import SnapCard from "../Sections/SnapCard"
+import { useAuth } from "@/app/hooks/useAuth"
 
 type Props = {
   user?: User
@@ -25,9 +26,7 @@ type Props = {
 type Tab = "Posts" | "Munchs" | "Activity" | "Followers"
 
 export function ProfilePage({ user, posts }: Props) {
-  const { authenticated, user: privyUser, ready } = usePrivy()
   const { getUserProfile, updateUserProfile, getUserFollowers, getUserFollowing } = useApi()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { createCreatorToken, checkCreatorExists, isConnected, connectWallet, isConnecting, address, switchToBaseSepolia } = useCreatorToken()
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -66,35 +65,9 @@ export function ProfilePage({ user, posts }: Props) {
   const [retweeted, setRetweeted] = useState<Set<number>>(new Set())
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set())
 
-  // Initialize user ID from Privy
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (authenticated && privyUser && ready) {
-        console.log("📊 Loading profile for Privy user:", privyUser.id);
-        try {
-          const response = await fetch(
-            `/api/users/privy/${privyUser.id}`
-          );
-          const data = await response.json();
-
-          if (data.exists && data.user?.id) {
-            console.log("✅ Found user in backend:", data.user.id);
-            setCurrentUserId(data.user.id);
-          } else {
-            console.log("❌ User not found in backend");
-            setCurrentUserId(null);
-          }
-        } catch (error) {
-          console.error("❌ Error fetching Privy user:", error);
-          setCurrentUserId(null);
-        }
-      } else {
-        setCurrentUserId(null);
-      }
-    };
-
-    initializeUser();
-  }, [authenticated, privyUser, ready]);
+  // Get auth state from Redux store - initialized once at app level
+  const { currentUserId: reduxUserId } = useAuth()
+  const currentUserId = reduxUserId
 
   // Fetch profile using currentUserId
   useEffect(() => {
