@@ -72,10 +72,11 @@ const Stories = dynamic(() => import("../components/Story"), {
   ssr: false
 });
 
-const Munch = dynamic(() => import("../components/Munch"), {
-  loading: () => <LoadingSpinner />,
-  ssr: false
-});
+// MUNCH COMMENTED OUT - Not in use
+// const Munch = dynamic(() => import("../components/Munch"), {
+//   loading: () => <LoadingSpinner />,
+//   ssr: false
+// });
 
 function SocialFeedPageContent() {
   const [activeTab, setActiveTab] = useState<"FOR YOU" | "FOLLOWING" | "COMMUNITY">(
@@ -94,7 +95,7 @@ function SocialFeedPageContent() {
     | "search"
     | "shares"
     | "invite"
-    | "munch"
+    // | "munch"  // MUNCH COMMENTED OUT - Not in use
   >("home");
   const [followingPosts, setFollowingPosts] = useState<any[]>([]);
   const [isLoadingFollowing, setIsLoadingFollowing] = useState(false);
@@ -105,6 +106,11 @@ function SocialFeedPageContent() {
   const [retweeted, setRetweeted] = useState<Set<number>>(new Set());
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [hasInitializedData, setHasInitializedData] = useState(false);
+
+  // Infinite scroll state
+  const [displayedPosts, setDisplayedPosts] = useState<any[]>([]);
+  const [postsToShow, setPostsToShow] = useState(10); // Start with 10 posts
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { data: session, status } = useSession();
   const { authenticated: privyAuthenticated, user: privyUser, ready: privyReady } = usePrivy();
@@ -143,7 +149,7 @@ function SocialFeedPageContent() {
         "search",
         "shares",
         "invite",
-        "munch",
+        // "munch",  // MUNCH COMMENTED OUT - Not in use
       ];
       if (validPages.includes(pageParam as any)) {
         setCurrentPage(pageParam as any);
@@ -195,7 +201,7 @@ function SocialFeedPageContent() {
         "search",
         "shares",
         "invite",
-        "munch",
+        // "munch",  // MUNCH COMMENTED OUT - Not in use
       ];
       if (validPages.includes(targetPage as any)) {
         setCurrentPage(targetPage as any);
@@ -402,12 +408,43 @@ function SocialFeedPageContent() {
     return dateB - dateA; // Sort by newest first
   });
 
+  // Update displayed posts when all posts change or postsToShow changes
+  useEffect(() => {
+    if (allPosts.length > 0) {
+      setDisplayedPosts(allPosts.slice(0, postsToShow));
+    }
+  }, [allPosts.length, postsToShow]);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    if (currentPage !== "home" || activeTab !== "FOR YOU") return;
+
+    const handleScroll = () => {
+      // Check if user is near bottom (within 300px)
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const bottomPosition = document.documentElement.offsetHeight - 300;
+
+      if (scrollPosition >= bottomPosition && !isLoadingMore && displayedPosts.length < allPosts.length) {
+        setIsLoadingMore(true);
+        // Load 5 more posts at a time
+        setTimeout(() => {
+          setPostsToShow(prev => Math.min(prev + 5, allPosts.length));
+          setIsLoadingMore(false);
+        }, 300); // Small delay for smooth UX
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentPage, activeTab, isLoadingMore, displayedPosts.length, allPosts.length]);
+
   const renderContent = () => {
     switch (currentPage) {
-      case "munch":
-        return <div className="w-full mx-auto">
-          <Munch />
-        </div>
+      // MUNCH COMMENTED OUT - Not in use
+      // case "munch":
+      //   return <div className="w-full mx-auto">
+      //     <Munch />
+      //   </div>
       case "explore":
         return <div className="w-full  mt-6">
           <ExplorePage/>
@@ -547,40 +584,54 @@ function SocialFeedPageContent() {
                             <PostSkeleton key={i} />
                           ))}
                         </div>
-                      ) : allPosts.length > 0 ? (
-                        allPosts.map((post) => (
-                          <SnapCard
-                            key={post.id}
-                            post={post}
-                            liked={liked.has(parseInt(post.id))}
-                            bookmarked={bookmarked.has(parseInt(post.id))}
-                            retweeted={retweeted.has(parseInt(post.id))}
-                            onLike={(id) =>
-                              setLiked(
-                                toggleSet(
-                                  liked,
-                                  typeof id === "string" ? parseInt(id) : id
+                      ) : displayedPosts.length > 0 ? (
+                        <>
+                          {displayedPosts.map((post) => (
+                            <SnapCard
+                              key={post.id}
+                              post={post}
+                              liked={liked.has(parseInt(post.id))}
+                              bookmarked={bookmarked.has(parseInt(post.id))}
+                              retweeted={retweeted.has(parseInt(post.id))}
+                              onLike={(id) =>
+                                setLiked(
+                                  toggleSet(
+                                    liked,
+                                    typeof id === "string" ? parseInt(id) : id
+                                  )
                                 )
-                              )
-                            }
-                            onBookmark={(id) =>
-                              setBookmarked(
-                                toggleSet(
-                                  bookmarked,
-                                  typeof id === "string" ? parseInt(id) : id
+                              }
+                              onBookmark={(id) =>
+                                setBookmarked(
+                                  toggleSet(
+                                    bookmarked,
+                                    typeof id === "string" ? parseInt(id) : id
+                                  )
                                 )
-                              )
-                            }
-                            onRetweet={(id) =>
-                              setRetweeted(
-                                toggleSet(
-                                  retweeted,
-                                  typeof id === "string" ? parseInt(id) : id
+                              }
+                              onRetweet={(id) =>
+                                setRetweeted(
+                                  toggleSet(
+                                    retweeted,
+                                    typeof id === "string" ? parseInt(id) : id
+                                  )
                                 )
-                              )
-                            }
-                          />
-                        ))
+                              }
+                            />
+                          ))}
+                          {/* Loading indicator for infinite scroll */}
+                          {isLoadingMore && (
+                            <div className="py-4 text-center">
+                              <LoadingSpinner size="w-6 h-6" />
+                            </div>
+                          )}
+                          {/* End of feed indicator */}
+                          {displayedPosts.length >= allPosts.length && allPosts.length > 0 && (
+                            <div className="py-8 text-center text-gray-500 text-sm">
+                              You've reached the end
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           {status === "authenticated" ? (
@@ -781,7 +832,7 @@ function SocialFeedPageContent() {
         </div>
 
         {/* Right Sidebar - Only visible at 2xl breakpoint */}
-        {currentPage !== "messages" && currentPage !== "share" && currentPage !=="explore" && currentPage !== "munch" && (session?.dbUser || currentUserId) && (
+        {currentPage !== "messages" && currentPage !== "share" && currentPage !=="explore" /* && currentPage !== "munch" */ && (session?.dbUser || currentUserId) && (
           <div
             className="hidden md:block lg:block xl:block 2xl:block w-[340px] h-screen sticky top-0"
 

@@ -17,7 +17,7 @@ const SignInPage = dynamic(() => import("@/app/SignIn/page"), {
   ssr: false
 });
 
-type PageKey = "home" | "wallet" | "explore" | "notifications" | "activity" | "messages" | "profile" | "share" |"explore" | "search" | "likes" | "bookmarks" | "munch" | "mention";
+type PageKey = "home" | "wallet" | "explore" | "notifications" | "activity" | "messages" | "profile" | "share" |"explore" | "search" | "likes" | "bookmarks" /* | "munch" */ | "mention";  // MUNCH COMMENTED OUT - Not in use
 
 type SidebarProps = {
   setCurrentPage: (page: PageKey) => void;
@@ -94,14 +94,15 @@ export default function Sidebar({
       showOnMobile: true,
       showOnDesktop: true
     },
-    {
-      label: "Munch",
-      value: "munch",
-      icon: <Film className="w-6 h-6" />,
-      activeIcon: <Film className="w-6 h-6 text-white" />,
-      showOnMobile: true,
-      showOnDesktop: true
-    },
+    // MUNCH COMMENTED OUT - Not in use
+    // {
+    //   label: "Munch",
+    //   value: "munch",
+    //   icon: <Film className="w-6 h-6" />,
+    //   activeIcon: <Film className="w-6 h-6 text-white" />,
+    //   showOnMobile: true,
+    //   showOnDesktop: true
+    // },
       {
       label: "Creator Shares",
       value: "share",
@@ -275,8 +276,8 @@ const handleNavClick = (value: PageKey) => {
               />
             </button>
 
-            {/* Munch */}
-            <button
+            {/* MUNCH COMMENTED OUT - Not in use */}
+            {/* <button
               onClick={() => handleNavClick("munch")}
               className="p-2 transition-opacity active:opacity-50"
             >
@@ -284,7 +285,7 @@ const handleNavClick = (value: PageKey) => {
                 className={`w-7 h-7 ${currentPage === "munch" ? "fill-white" : ""}`}
                 strokeWidth={currentPage === "munch" ? 2.5 : 2}
               />
-            </button>
+            </button> */}
 
             {/* Upload Post - Instagram Style */}
             <button

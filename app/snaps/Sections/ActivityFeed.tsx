@@ -17,38 +17,46 @@ export default function UserActivityFeed({ username, limit = 10 }: UserActivityF
     fetchRecentActivity(limit);
   }, [limit]);
 
+  const formatUsername = (usernameOrAddress: string): string => {
+    // Backend now returns usernames or "User 0x1234...5678" format
+    // Just return as-is, backend handles the formatting
+    return usernameOrAddress || 'Unknown';
+  };
+
   const formatActivityMessage = (activity: ActivityItem): string => {
     const { username: user, action, token_name, creator_name, amount, total_cost, is_freebie, type } = activity;
-    
+    const formattedUser = formatUsername(user);
+    const formattedCreator = formatUsername(creator_name);
+
     if (is_freebie) {
       if (type === 'post_token') {
-        return `${user} claimed a freebie of a snap by ${creator_name}`;
+        return `${formattedUser} claimed a freebie snap from ${formattedCreator}`;
       } else {
-        return `${user} claimed a freebie of creator share of ${creator_name}`;
+        return `${formattedUser} claimed a freebie share of ${formattedCreator}`;
       }
     }
-    
+
     switch (action) {
       case 'bought':
         if (type === 'post_token') {
-          return `${user} bought a snap of ${creator_name}`;
+          return `${formattedUser} bought ${amount} snap${amount > 1 ? 's' : ''} from ${formattedCreator}`;
         } else {
-          return `${user} bought creator share of ${creator_name}`;
+          return `${formattedUser} bought ${amount} share${amount > 1 ? 's' : ''} of ${formattedCreator}`;
         }
       case 'sold':
         if (type === 'post_token') {
-          return `${user} sold a snap of ${creator_name}`;
+          return `${formattedUser} sold ${amount} snap${amount > 1 ? 's' : ''} of ${formattedCreator}`;
         } else {
-          return `${user} sold creator share of ${creator_name}`;
+          return `${formattedUser} sold ${amount} share${amount > 1 ? 's' : ''} of ${formattedCreator}`;
         }
       case 'claimed_freebie':
         if (type === 'post_token') {
-          return `${user} claimed a freebie of a snap by ${creator_name}`;
+          return `${formattedUser} claimed a freebie snap from ${formattedCreator}`;
         } else {
-          return `${user} claimed a freebie of creator share of ${creator_name}`;
+          return `${formattedUser} claimed a freebie share of ${formattedCreator}`;
         }
       default:
-        return `${user} ${action} ${token_name}`;
+        return `${formattedUser} ${action} ${token_name}`;
     }
   };
 
@@ -71,7 +79,7 @@ export default function UserActivityFeed({ username, limit = 10 }: UserActivityF
     const now = new Date();
     const activityDate = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - activityDate.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) {
       return 'Just now';
     } else if (diffInSeconds < 3600) {
@@ -150,9 +158,6 @@ export default function UserActivityFeed({ username, limit = 10 }: UserActivityF
                 {getActivityIcon(activity)}
               </div>
               <div className="flex-1">
-                <div className="text-xs font-medium text-white mb-1">
-                  {activity.username}
-                </div>
                 <div className="text-xs text-gray-300 mb-1">
                   {formatActivityMessage(activity)}
                 </div>

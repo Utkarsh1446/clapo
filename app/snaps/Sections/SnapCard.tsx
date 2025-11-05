@@ -48,6 +48,7 @@ export default function SnapCard({ post, liked, bookmarked, retweeted, onLike, o
 
   const { likePost, unlikePost, retweetPost, bookmarkPost, unbookmarkPost, viewPost, addComment, getPostComments, state } = useApi()
   const { data: session, status } = useSession()
+  const { user: privyUser } = usePrivy()
   const router = useRouter()
 
   // Get auth state from Redux store - no more API calls!
