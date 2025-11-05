@@ -127,6 +127,7 @@ export function SnapComposer({ close }: { close: () => void }) {
 
   const mediaUploadRef = useRef<MediaUploadHandle>(null)
   const userId = currentUserId
+  const { authenticated, ready, user: privyUser } = usePrivy()
 
   React.useEffect(() => {
     console.log('🔍 SnapComposer Auth State:', {

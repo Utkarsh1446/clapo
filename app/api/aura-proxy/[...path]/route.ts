@@ -11,10 +11,11 @@ const BACKEND_API_BASE = 'https://server.blazeswap.io/api/aura';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const path = params.path.join('/');
+    const { path: pathArray } = await context.params;
+    const path = pathArray.join('/');
     const searchParams = request.nextUrl.searchParams.toString();
     const url = `${BACKEND_API_BASE}/${path}${searchParams ? `?${searchParams}` : ''}`;
 
@@ -50,10 +51,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const path = params.path.join('/');
+    const { path: pathArray } = await context.params;
+    const path = pathArray.join('/');
     const body = await request.json();
     const url = `${BACKEND_API_BASE}/${path}`;
 
@@ -90,10 +92,11 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const path = params.path.join('/');
+    const { path: pathArray } = await context.params;
+    const path = pathArray.join('/');
     const body = await request.json();
     const url = `${BACKEND_API_BASE}/${path}`;
 
@@ -130,10 +133,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  context: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const path = params.path.join('/');
+    const { path: pathArray } = await context.params;
+    const path = pathArray.join('/');
     const url = `${BACKEND_API_BASE}/${path}`;
 
     console.log('🔄 Aura Proxy DELETE:', url);

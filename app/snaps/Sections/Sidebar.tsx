@@ -17,7 +17,7 @@ const SignInPage = dynamic(() => import("@/app/SignIn/page"), {
   ssr: false
 });
 
-type PageKey = "home" | "wallet" | "explore" | "notifications" | "activity" | "messages" | "profile" | "share" |"explore" | "search" | "likes" | "bookmarks" /* | "munch" */ | "mention";  // MUNCH COMMENTED OUT - Not in use
+type PageKey = "home" | "wallet" | "explore" | "notifications" | "activity" | "messages" | "profile" | "share" |"explore" | "search" | "likes" | "bookmarks" | "munch" | "mention";
 
 type SidebarProps = {
   setCurrentPage: (page: PageKey) => void;
