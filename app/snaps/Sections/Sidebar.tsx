@@ -1,5 +1,5 @@
 "use client";
-import { Home, Bell, User, MessageCircle, Activity, Blocks, TrendingUp, Telescope, Wallet, Lock, Settings, LogOut, PersonStandingIcon, AtSign, Film, Search, Menu, X, Plus } from "lucide-react";
+import { Home, Bell, User, Blocks, Wallet, LogOut, PersonStandingIcon, Search, Menu, X, Plus } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -17,7 +17,7 @@ const SignInPage = dynamic(() => import("@/app/SignIn/page"), {
   ssr: false
 });
 
-type PageKey = "home" | "wallet" | "explore" | "notifications" | "activity" | "messages" | "profile" | "share" |"explore" | "search" | "likes" | "bookmarks" | "munch" | "mention";
+type PageKey = "home" | "wallet" | "notifications" | "activity" | "profile" | "share" | "search" | "likes" | "bookmarks" | "munch" | "mention";
 
 type SidebarProps = {
   setCurrentPage: (page: PageKey) => void;
@@ -47,9 +47,9 @@ interface ExtendedSession {
 }
 
 export default function Sidebar({ 
-  setCurrentPage, 
+  setCurrentPage,
   currentPage = "home",
-  collapsibleItems = ["messages"], 
+  collapsibleItems = [],
   alwaysExpanded = false,
   onNavigateToOpinio,
   onNavigateToSnaps
@@ -86,14 +86,6 @@ export default function Sidebar({
       showOnMobile: true,
       showOnDesktop: true
     },
-      {
-      label: "Explore",
-      value: "explore",
-      icon: <Telescope className="w-6 h-6" />,
-      activeIcon: <Telescope className="w-6 h-6 text-white" />,
-      showOnMobile: true,
-      showOnDesktop: true
-    },
     // MUNCH COMMENTED OUT - Not in use
     // {
     //   label: "Munch",
@@ -103,19 +95,19 @@ export default function Sidebar({
     //   showOnMobile: true,
     //   showOnDesktop: true
     // },
-      {
-      label: "Creator Shares",
-      value: "share",
-      icon: <Blocks className="w-6 h-6" />,
-      activeIcon: <Blocks className="w-6 h-6 text-white" />,
+    {
+      label: "Search",
+      value: "search",
+      icon: <Search className="w-6 h-6" />,
+      activeIcon: <Search className="w-6 h-6 text-white" />,
       showOnMobile: true,
       showOnDesktop: true
     },
     {
-      label: "Messages",
-      value: "messages",
-      icon: <MessageCircle className="w-6 h-6" />,
-      activeIcon: <MessageCircle className="w-6 h-6 text-white" />,
+      label: "Creator Shares",
+      value: "share",
+      icon: <Blocks className="w-6 h-6" />,
+      activeIcon: <Blocks className="w-6 h-6 text-white" />,
       showOnMobile: true,
       showOnDesktop: true
     },
@@ -243,20 +235,11 @@ const handleNavClick = (value: PageKey) => {
             <div className="flex items-center gap-4">
               {/* Search Icon */}
               <button
-                onClick={() => handleNavClick("explore")}
+                onClick={() => handleNavClick("search")}
                 className="text-white transition-opacity active:opacity-50"
                 aria-label="Search"
               >
                 <Search className="w-6 h-6" strokeWidth={2} />
-              </button>
-
-              {/* Messages Icon */}
-              <button
-                onClick={() => handleNavClick("messages")}
-                className="text-white transition-opacity active:opacity-50"
-                aria-label="Messages"
-              >
-                <MessageCircle className="w-6 h-6" strokeWidth={2} />
               </button>
             </div>
           </div>
