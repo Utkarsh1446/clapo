@@ -19,6 +19,7 @@ import { usePostTokenPrice } from '@/app/hooks/useGlobalPrice'
 import { renderTextWithMentions } from '@/app/lib/mentionUtils.tsx'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/hooks/useAuth'
+import Image from 'next/image'
 
 type Props = {
   post: Post | ApiPost
@@ -531,12 +532,15 @@ const handleImageClick = (e: React.MouseEvent) => {
               avatarUrl={postAvatar}
               position="bottom"
             >
-              <div className={`w-8 h-8 md:w-10 md:h-10 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity ${accountType === 'community' ? 'rounded-md' : 'rounded-full'}`} onClick={(e) => e.stopPropagation()}>
+              <div className={`w-8 h-8 md:w-10 md:h-10 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity ${accountType === 'community' ? 'rounded-md' : 'rounded-full'} relative`} onClick={(e) => e.stopPropagation()}>
                 {postAvatar ? (
-                  <img
+                  <Image
                     src={postAvatar}
                     alt={postAuthor}
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                     onError={e => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${postAuthor}`
                     }}
@@ -619,13 +623,18 @@ const handleImageClick = (e: React.MouseEvent) => {
             {/* Media Section - Twitter Style */}
             {postImage && (
               <div className="mb-2 md:mb-3">
-                <div className="border border-gray-700/50 rounded-2xl overflow-hidden bg-black flex items-center justify-center max-h-[400px] md:max-h-[506px]">
+                <div className="border border-gray-700/50 rounded-2xl overflow-hidden bg-black flex items-center justify-center max-h-[400px] md:max-h-[506px] relative">
                   {/\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|ico)$/i.test(postImage) ? (
-                    <img
+                    <Image
                       src={postImage}
                       alt="Post content"
+                      width={600}
+                      height={400}
                       className="w-full h-auto object-contain cursor-pointer max-h-[400px] md:max-h-[506px]"
                       onClick={handleImageClick}
+                      loading="lazy"
+                      quality={75}
+                      sizes="(max-width: 768px) 100vw, 600px"
                     />
                   ) : /\.(mp4|webm|ogg|mov|avi|mkv|flv|wmv|m4v|3gp|ts|mts|m2ts)$/i.test(postImage) ? (
                     <video
@@ -755,11 +764,16 @@ const handleImageClick = (e: React.MouseEvent) => {
                 {comments.length > 0 ? (
                   comments.slice(0, visibleCount).map((comment) => (
                     <div key={comment.id} className="flex gap-2 md:gap-2.5">
-                      <img
-                        src={comment.avatar_url || `https://ui-avatars.com/api/?name=${comment.username}`}
-                        alt={comment.username}
-                        className="w-6 h-6 md:w-7 md:h-7 rounded-full flex-shrink-0"
-                      />
+                      <div className="w-6 h-6 md:w-7 md:h-7 rounded-full flex-shrink-0 relative overflow-hidden">
+                        <Image
+                          src={comment.avatar_url || `https://ui-avatars.com/api/?name=${comment.username}`}
+                          alt={comment.username}
+                          width={28}
+                          height={28}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs md:text-sm">
                           <span className="font-semibold text-white mr-1.5 md:mr-2">{comment.username}</span>
@@ -793,12 +807,15 @@ const handleImageClick = (e: React.MouseEvent) => {
               {/* Add Comment Input */}
               <div className="pt-2 md:pt-3">
                 <form onSubmit={handleCommentSubmit} className="flex items-center gap-1.5 md:gap-2">
-                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full overflow-hidden">
+                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full overflow-hidden relative">
                     {profile?.avatar_url ? (
-                      <img
+                      <Image
                         src={profile.avatar_url}
                         alt="Your avatar"
+                        width={24}
+                        height={24}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-700 flex items-center justify-center text-[10px] md:text-xs font-semibold text-white">
@@ -854,11 +871,12 @@ const handleImageClick = (e: React.MouseEvent) => {
               >
                 <X className="w-6 h-6" />
               </button>
-              <motion.img 
-                src={postImage} 
-                alt="Post content" 
+              <motion.img
+                src={postImage}
+                alt="Post content"
                 className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image
+                loading="eager"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}

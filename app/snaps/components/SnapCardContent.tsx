@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import Image from 'next/image'
 import { Post, ApiPost } from '@/app/types'
 
 interface SnapCardContentProps {
@@ -18,11 +19,16 @@ export default function SnapCardContent({ post }: SnapCardContentProps) {
       </p>
 
       {mediaUrl && (
-        <div className="mt-3 rounded-lg overflow-hidden">
-          <img
+        <div className="mt-3 rounded-lg overflow-hidden relative">
+          <Image
             src={mediaUrl}
             alt="Post media"
+            width={600}
+            height={400}
             className="w-full h-auto object-cover max-h-96"
+            loading="lazy"
+            quality={75}
+            sizes="(max-width: 768px) 100vw, 600px"
             onError={(e) => {
               const target = e.target as HTMLImageElement
               target.style.display = 'none'

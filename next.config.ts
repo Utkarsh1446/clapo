@@ -17,7 +17,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "storage.googleapis.com", pathname: "/**" },
       { protocol: "https", hostname: "www.adobe.com", pathname: "/**" },
       { protocol: "https", hostname: "st4.depositphotos.com", pathname: "/**" },
-      
+      { protocol: "https", hostname: "ui-avatars.com", pathname: "/**" },
+
     ],
   },
 

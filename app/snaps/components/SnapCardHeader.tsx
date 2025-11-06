@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import Image from 'next/image'
 import { MoreHorizontal } from 'lucide-react'
 import { UserProfileHover } from '../../components/UserProfileHover'
 import { Post, ApiPost } from '@/app/types'
@@ -27,15 +28,20 @@ export default function SnapCardHeader({ post, formatDate, onOptionsClick }: Sna
           username={username}
           avatarUrl={avatarUrl}
         >
-          <img
-            src={avatarUrl || '/4.png'}
-            alt={username}
-            className="w-11 h-11 rounded-full border-2 border-gray-600"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/4.png';
-            }}
-          />
+          <div className="w-11 h-11 rounded-full border-2 border-gray-600 relative overflow-hidden">
+            <Image
+              src={avatarUrl || '/4.png'}
+              alt={username}
+              width={44}
+              height={44}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/4.png';
+              }}
+            />
+          </div>
         </UserProfileHover>
         <div>
           <div className="flex items-center space-x-2">
