@@ -43,9 +43,13 @@ export default function OpinioPage() {
       className="min-h-screen bg-[#0A0A0A]"
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="flex sticky  h-[600px]">
-        <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-        <div className="w-full bg-[#0A0A0A]">{renderContent()}</div>
+      <div className="flex flex-col lg:flex-row sticky min-h-screen lg:h-[600px]">
+        <div className="w-full lg:w-60 border-r border-gray-800">
+          <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        </div>
+        <div className="flex-1 w-full bg-[#0A0A0A] overflow-y-auto">
+          {renderContent()}
+        </div>
       </div>
       <Footer />
     </motion.div>

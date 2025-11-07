@@ -148,7 +148,7 @@ export const TradingInterface: React.FC<TradingInterfaceProps> = ({
       {userPosition && (
         <div className="bg-[#2A2A2A] p-3 rounded-md mb-4">
           <h4 className="text-sm font-medium text-white mb-2">Your Current Position</h4>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
             <div>
               <span className="text-gray-400">Position:</span>
               <div className={`font-medium ${userPosition.isLong ? 'text-green-400' : 'text-red-400'}`}>
@@ -334,7 +334,7 @@ export const TradingInterface: React.FC<TradingInterfaceProps> = ({
         <h4 className="text-sm font-medium text-white">Trade Summary</h4>
         
         {/* Basic Trade Info */}
-        <div className="grid grid-cols-2 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
           <div>
             <span className="text-gray-400">Action:</span>
             <div className="text-white font-medium">
@@ -362,7 +362,7 @@ export const TradingInterface: React.FC<TradingInterfaceProps> = ({
         {/* Trading Details */}
         <div className="border-t border-[#3A3A3A] pt-3">
           <h5 className="text-xs font-medium text-gray-300 mb-2">Trading Details</h5>
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
             <div>
               <span className="text-gray-400">Shares:</span>
               <div className="text-white font-medium">

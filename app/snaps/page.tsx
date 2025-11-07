@@ -527,14 +527,14 @@ function SocialFeedPageContent() {
    <div className="bg-gray-700/50 rounded-full mb-4 p-0.5 ">
       <div>
         <div
-        
-          className="flex justify-around bg-black m-0.5 p-1 items-center rounded-full relative"
+
+          className="flex justify-around gap-0.5 sm:gap-1 bg-black p-0.5 sm:p-1 items-center rounded-full relative overflow-x-auto"
         >
           {["FOR YOU", "FOLLOWING","COMMUNITY"].map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className={`p-2 my-1 font-semibold w-full relative z-10 text-xs sm:text-sm ${
+              className={`px-2 sm:px-4 py-1 sm:py-2 my-1 font-semibold w-full relative z-10 text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${
                 activeTab === tab ? "text-white" : "text-gray-400"
               }`}
             >
@@ -827,14 +827,14 @@ function SocialFeedPageContent() {
         </div>
 
         {/* Main Content - Flexible center with mobile padding */}
-        <div className="flex-1 pt-14 md:pt-0 px-2 sm:px-4 pb-16 lg:pb-4">
+        <div className="flex-1 pt-4 md:pt-0 px-2 sm:px-4 pb-20 sm:pb-16 lg:pb-4">
           <div className="">{renderContent()}</div>
         </div>
 
-        {/* Right Sidebar - Only visible at 2xl breakpoint */}
+        {/* Right Sidebar - Only visible on desktop (lg+) */}
         {currentPage !== "messages" && currentPage !== "share" && currentPage !=="explore" /* && currentPage !== "munch" */ && (session?.dbUser || currentUserId) && (
           <div
-            className="hidden md:block lg:block xl:block 2xl:block w-[340px] h-screen sticky top-0"
+            className="hidden lg:block w-[340px] h-screen sticky top-0"
 
           >
             <div className="p-6">

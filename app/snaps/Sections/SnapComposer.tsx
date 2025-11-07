@@ -576,12 +576,12 @@ export function SnapComposer({ close }: { close: () => void }) {
             <div className="flex-1">
               <TextareaAutosize
                 ref={textareaRef}
-                minRows={3}
-                maxRows={8}
+                minRows={2}
+                maxRows={6}
                 value={content}
                 onChange={handleContentChange}
                 placeholder="What's happening? Type @ to mention someone"
-                className="w-full resize-none bg-black border-2 border-gray-700/70 p-3 rounded-xl text-white placeholder-gray-500 text-base leading-relaxed focus:outline-none focus:border-[#6E54FF]/50 transition-all duration-200"
+                className="w-full resize-none bg-black border-2 border-gray-700/70 p-2 sm:p-3 rounded-xl text-white placeholder-gray-500 text-sm sm:text-base leading-relaxed focus:outline-none focus:border-[#6E54FF]/50 transition-all duration-200"
               />
               <div className="text-right mt-1">
                 <span className={`text-xs ${

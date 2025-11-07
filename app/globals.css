@@ -246,18 +246,30 @@ background: linear-gradient(360deg, #0B0D16 -61.97%, #181C2A 56.12%);
 }
 
 .podium-size {
-  --podium-scale: 1; 
+  --podium-scale: 0.8; /* Mobile default < 640px */
 }
 
-@media (min-width: 600px) {
+@media (min-width: 640px) { /* sm */
   .podium-size {
-    --podium-scale: 1.2; /* Increased scale */
+    --podium-scale: 1;
   }
 }
 
-@media (min-width: 960px) {
+@media (min-width: 768px) { /* md */
   .podium-size {
-    --podium-scale: 2; /* Increased scale */
+    --podium-scale: 1.3;
+  }
+}
+
+@media (min-width: 1024px) { /* lg */
+  .podium-size {
+    --podium-scale: 1.8;
+  }
+}
+
+@media (min-width: 1280px) { /* xl */
+  .podium-size {
+    --podium-scale: 2.2;
   }
 }
 
