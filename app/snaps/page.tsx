@@ -22,22 +22,12 @@ import { AuraBalance } from "../components/Aura/AuraBalance";
 import { useAuth } from "../hooks/useAuth";
 
 // Dynamic imports for heavy components - improves initial load time
-const ExplorePage = dynamic(() => import("./SidebarSection/ExplorePage"), {
-  loading: () => <LoadingSpinner />,
-  ssr: false
-});
-
 const ProfilePage = dynamic(() => import("./SidebarSection/ProfilePage").then(mod => ({ default: mod.ProfilePage })), {
   loading: () => <LoadingSpinner />,
   ssr: false
 });
 
 const NotificationPage = dynamic(() => import("./SidebarSection/NotificationPage"), {
-  loading: () => <LoadingSpinner />,
-  ssr: false
-});
-
-const MessagePage = dynamic(() => import("./SidebarSection/MessagePage"), {
   loading: () => <LoadingSpinner />,
   ssr: false
 });
@@ -84,12 +74,10 @@ function SocialFeedPageContent() {
   );
   const [currentPage, setCurrentPage] = useState<
     | "home"
-    | "explore"
     | "notifications"
     | "likes"
     | "activity"
     | "profile"
-    | "messages"
     | "bookmarks"
     | "share"
     | "search"
@@ -138,12 +126,10 @@ function SocialFeedPageContent() {
     if (pageParam) {
       const validPages = [
         "home",
-        "explore",
         "notifications",
         "likes",
         "activity",
         "profile",
-        "messages",
         "bookmarks",
         "share",
         "search",
@@ -190,12 +176,10 @@ function SocialFeedPageContent() {
     if (targetPage) {
       const validPages = [
         "home",
-        "explore",
         "notifications",
         "likes",
         "activity",
         "profile",
-        "messages",
         "bookmarks",
         "share",
         "search",
@@ -445,10 +429,6 @@ function SocialFeedPageContent() {
       //   return <div className="w-full mx-auto">
       //     <Munch />
       //   </div>
-      case "explore":
-        return <div className="w-full  mt-6">
-          <ExplorePage/>
-        </div>
       case "notifications":
         return <div className="w-full max-w-3xl mx-auto mt-6 "> <NotificationPage/></div>
       case "likes":
@@ -502,12 +482,6 @@ function SocialFeedPageContent() {
         return <div className="w-full mt-6">
           <SharePage />
         </div>;
-      case "messages":
-        return (
-          <div className="w-full">
-            <MessagePage />
-          </div>
-        );
       case "invite":
         return (
           <div className="w-full max-w-3xl mx-auto  mt-6">
@@ -832,7 +806,7 @@ function SocialFeedPageContent() {
         </div>
 
         {/* Right Sidebar - Only visible at 2xl breakpoint */}
-        {currentPage !== "messages" && currentPage !== "share" && currentPage !=="explore" /* && currentPage !== "munch" */ && (session?.dbUser || currentUserId) && (
+        {currentPage !== "share" /* && currentPage !== "munch" */ && (session?.dbUser || currentUserId) && (
           <div
             className="hidden md:block lg:block xl:block 2xl:block w-[340px] h-screen sticky top-0"
 

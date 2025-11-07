@@ -148,8 +148,8 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
 
   const sendCommunityMessage = useCallback(async (communityId: string, data: SendMessageRequest) => {
     try {
-      const response = await apiService.sendCommunityMessage(communityId, data) as any
-      dispatch({ type: 'ADD_COMMUNITY_MESSAGE', payload: { communityId, message: response.messages[0] } })
+      // const response = await apiService.sendCommunityMessage(communityId, data) as any
+      // dispatch({ type: 'ADD_COMMUNITY_MESSAGE', payload: { communityId, message: response.messages[0] } })
     } catch (error) {
       console.error('Failed to send community message:', error)
     }
@@ -157,8 +157,8 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
 
   const getCommunityMessages = useCallback(async (communityId: string) => {
     try {
-      const response = await apiService.getCommunityMessages(communityId) as any
-      dispatch({ type: 'SET_COMMUNITY_MESSAGES', payload: { communityId, messages: response.messages } })
+      // const response = await apiService.getCommunityMessages(communityId) as any
+      // dispatch({ type: 'SET_COMMUNITY_MESSAGES', payload: { communityId, messages: response.messages } })
     } catch (error) {
       console.error('Failed to fetch community messages:', error)
     }

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@aws-sdk/client-s3", "@google-cloud/storage"],
@@ -17,7 +18,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "storage.googleapis.com", pathname: "/**" },
       { protocol: "https", hostname: "www.adobe.com", pathname: "/**" },
       { protocol: "https", hostname: "st4.depositphotos.com", pathname: "/**" },
-      
+      { protocol: "https", hostname: "ui-avatars.com", pathname: "/**" },
+
     ],
   },
 
@@ -35,4 +37,9 @@ webpack: (config, { isServer }) => {
   },
 };
 
-export default nextConfig;
+export default withPWA({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+})(nextConfig);

@@ -129,7 +129,7 @@ function SignInPage() {
               console.log("✅ Returning user detected, redirecting immediately...");
               setIsRedirecting(true);
               console.log("🚀 Redirecting now to /snaps");
-              window.location.href = '/snaps';
+              window.location.href = '/';
             } else if (flowState === "initial") {
               // New user - show onboarding
               console.log("🆕 New user detected, showing onboarding");

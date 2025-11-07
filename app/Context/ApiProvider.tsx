@@ -14,7 +14,7 @@
  */
 
 import React, { ReactNode } from 'react'
-import { AppProviders, useAuth, usePost, useUser, useNotification, useMessage, useCommunity } from './AppProviders'
+import { AppProviders, useAuth, usePost, useUser, useNotification, useCommunity } from './AppProviders'
 import type { CommentRequest } from '../types/api'
 
 // Backward compatibility: ApiProvider wraps AppProviders
@@ -28,7 +28,6 @@ export function useApi() {
   const post = usePost()
   const user = useUser()
   const notification = useNotification()
-  const message = useMessage()
   const community = useCommunity()
 
   return {
@@ -40,10 +39,7 @@ export function useApi() {
       notifications: notification.state.notifications,
       enhancedNotifications: notification.state.enhancedNotifications,
       activities: notification.state.activities,
-      messageThreads: message.state.messageThreads,
-      threadMessages: message.state.threadMessages,
       communities: community.state.communities,
-      communityMessages: community.state.communityMessages,
     },
     dispatch: (..._args: any[]) => {}, // No-op for backward compatibility
 
@@ -86,20 +82,11 @@ export function useApi() {
     markNotificationAsRead: notification.markNotificationAsRead,
     markAllNotificationsAsRead: notification.markAllNotificationsAsRead,
 
-    // Message methods
-    getMessageThreads: message.getMessageThreads,
-    getThreadMessages: message.getThreadMessages,
-    sendMessage: message.sendMessage,
-    addParticipantToThread: message.addParticipantToThread,
-    markMessageAsRead: message.markMessageAsRead,
-
     // Community methods
     createCommunity: community.createCommunity,
     getCommunities: community.getCommunities,
     joinCommunity: community.joinCommunity,
     getCommunityMembers: community.getCommunityMembers,
-    sendCommunityMessage: community.sendCommunityMessage,
-    getCommunityMessages: community.getCommunityMessages,
     getUserCommunities: community.getUserCommunities,
   }
 }

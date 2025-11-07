@@ -22,20 +22,12 @@ import {
   FollowRequest,
   FollowResponse,
   UnfollowResponse,
-  SendMessageRequest,
-  SendMessageResponse,
   CreateCommunityRequest,
   JoinCommunityRequest,
   NotificationsResponse,
   ActivityResponse,
   ApiError,
-  CreateMessageThreadRequest,
-  MessageThreadsResponse,
-  ThreadMessagesResponse,
-  AddParticipantRequest,
-  AddParticipantResponse,
   CommunityMembersResponse,
-  CommunityMessagesResponse,
   EnhancedNotificationsResponse,
   ReputationScore,
   ReputationHistoryResponse,
@@ -170,89 +162,6 @@ class ApiService {
     }
   }
 
-  async createMessageThread(data: CreateMessageThreadRequest): Promise<unknown> {
-    try {
-      const requestBody: { userId1: string; userId2: string; name?: string } = {
-        userId1: data.creatorId,
-        userId2: data.targetUserId
-      }
-      
-      if (data.name) {
-        requestBody.name = data.name
-      }
-      
-      const response = await this.request('/messages/direct-thread', {
-        method: 'POST',
-        body: JSON.stringify(requestBody),
-      })
-      
-      return response
-    } catch (error) {
-      console.error('Error creating message thread:', error);
-      throw error;
-    }
-  }
-
-  async getMessageThreads(userId: string, limit = 20, offset = 0): Promise<MessageThreadsResponse> {
-    try {
-      const response = await this.request(`/message-threads?userId=${userId}&limit=${limit}&offset=${offset}`)
-      return response as MessageThreadsResponse
-    } catch (error) {
-      console.error('Error fetching message threads:', error);
-      throw error;
-    }
-  }
-
-  async getThreadMessages(threadId: string, limit = 50, offset = 0): Promise<ThreadMessagesResponse> {
-    try {
-      const response = await this.request(`/message-threads/${threadId}/messages?limit=${limit}&offset=${offset}`)
-      return response as ThreadMessagesResponse
-    } catch (error) {
-      console.error('Error fetching thread messages:', error);
-      throw error;
-    }
-  }
-
-  async sendMessage(threadId: string, data: SendMessageRequest): Promise<SendMessageResponse> {
-    try {
-      const response = await this.request(`/messages/thread/${threadId}`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-      return response as SendMessageResponse
-    } catch (error) {
-      console.error('Error sending message:', error);
-      throw error;
-    }
-  }
-
-  async addParticipantToThread(threadId: string, data: AddParticipantRequest): Promise<AddParticipantResponse> {
-    try {
-      const response = await this.request(`/message-threads/${threadId}/participants`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-      return response as AddParticipantResponse
-    } catch (error) {
-      console.error('Error adding participant to thread:', error);
-      throw error;
-    }
-  }
-
-  async markMessageAsRead(messageId: string): Promise<unknown> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/messages/${messageId}/read`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      return await response.json();
-    } catch (error) {
-      console.error('Error marking message as read:', error);
-      throw error;
-    }
-  }
 
   async createCommunity(data: CreateCommunityRequest): Promise<unknown> {
     try {
@@ -315,28 +224,6 @@ class ApiService {
     }
   }
 
-  async sendCommunityMessage(communityId: string, data: SendMessageRequest): Promise<CommunityMessagesResponse> {
-    try {
-      const response = await this.request(`/communities/${communityId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-      return response as CommunityMessagesResponse
-    } catch (error) {
-      console.error('Error sending community message:', error)
-      throw error
-    }
-  }
-
-  async getCommunityMessages(communityId: string, limit = 50, offset = 0): Promise<CommunityMessagesResponse> {
-    try {
-      const response = await this.request(`/communities/${communityId}/messages?limit=${limit}&offset=${offset}`)
-      return response as CommunityMessagesResponse
-    } catch (error) {
-      console.error('Error fetching community messages:', error)
-      throw error
-    }
-  }
 
   async searchUsers(query: string, limit: number = 10, offset: number = 0): Promise<SearchUsersResponse> {
     

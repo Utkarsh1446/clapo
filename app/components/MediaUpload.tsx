@@ -31,6 +31,7 @@ const MediaUpload = forwardRef<MediaUploadHandle, MediaUploadProps>(
     const [acceptType, setAcceptType] = useState<'image' | 'video' | 'audio' | 'any'>('any')
     const [inputKey, setInputKey] = useState(0)
     const [isUploading, setIsUploading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState<string>('')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     useImperativeHandle(ref, () => ({
@@ -78,6 +79,199 @@ const MediaUpload = forwardRef<MediaUploadHandle, MediaUploadProps>(
       return { isValid: true }
     }
 
+    // Compress image to target size (e.g., 50KB)
+    const compressImageToTargetSize = async (
+      file: File,
+      targetSizeKB = 50,
+      maxWidth = 1920,
+      maxHeight = 1080
+    ): Promise<File> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+
+        reader.onload = async (e) => {
+          const img = new Image()
+          img.src = e.target?.result as string
+
+          img.onload = async () => {
+            const canvas = document.createElement('canvas')
+            let width = img.width
+            let height = img.height
+
+            // Calculate new dimensions while maintaining aspect ratio
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width)
+              width = maxWidth
+            }
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height)
+              height = maxHeight
+            }
+
+            canvas.width = width
+            canvas.height = height
+
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+              reject(new Error('Failed to get canvas context'))
+              return
+            }
+
+            ctx.imageSmoothingEnabled = true
+            ctx.imageSmoothingQuality = 'high'
+            ctx.drawImage(img, 0, 0, width, height)
+
+            // Iteratively compress to target size
+            const targetSizeBytes = targetSizeKB * 1024
+            let quality = 0.9
+            let blob: Blob | null = null
+            let attempts = 0
+            const maxAttempts = 10
+
+            while (attempts < maxAttempts) {
+              blob = await new Promise<Blob | null>((resolveBlob) => {
+                canvas.toBlob(resolveBlob, 'image/jpeg', quality)
+              })
+
+              if (!blob) {
+                reject(new Error('Compression failed'))
+                return
+              }
+
+              console.log(`Attempt ${attempts + 1}: Size=${(blob.size / 1024).toFixed(2)}KB, Quality=${quality.toFixed(2)}`)
+
+              // If we're within 10% of target or below target, we're done
+              if (blob.size <= targetSizeBytes || blob.size <= targetSizeBytes * 1.1) {
+                break
+              }
+
+              // If still too large, reduce quality more aggressively
+              const ratio = targetSizeBytes / blob.size
+              quality *= Math.max(ratio * 0.9, 0.5) // Reduce quality but not below 50% of current
+              quality = Math.max(quality, 0.1) // Never go below 0.1
+              
+              attempts++
+            }
+
+            if (!blob) {
+              reject(new Error('Compression failed'))
+              return
+            }
+
+            // If still larger than target after max attempts, reduce dimensions
+            if (blob.size > targetSizeBytes && attempts >= maxAttempts) {
+              console.log('Still too large, reducing dimensions...')
+              
+              // Reduce dimensions by 70%
+              canvas.width = Math.round(width * 0.7)
+              canvas.height = Math.round(height * 0.7)
+              
+              ctx.clearRect(0, 0, canvas.width, canvas.height)
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+              
+              // Try one more time with lower quality
+              blob = await new Promise<Blob | null>((resolveBlob) => {
+                canvas.toBlob(resolveBlob, 'image/jpeg', 0.5)
+              })
+            }
+
+            if (!blob) {
+              reject(new Error('Compression failed'))
+              return
+            }
+
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            })
+
+            console.log('✅ Final compression stats:', {
+              original: `${(file.size / 1024).toFixed(2)} KB`,
+              compressed: `${(compressedFile.size / 1024).toFixed(2)} KB`,
+              target: `${targetSizeKB} KB`,
+              reduction: `${((1 - compressedFile.size / file.size) * 100).toFixed(1)}%`,
+              finalDimensions: `${canvas.width}x${canvas.height}`,
+            })
+
+            resolve(compressedFile)
+          }
+
+          img.onerror = () => reject(new Error('Failed to load image'))
+        }
+
+        reader.onerror = () => reject(new Error('Failed to read file'))
+      })
+    }
+
+    // Simple compression (for backward compatibility)
+    const compressImage = (
+      file: File, 
+      maxWidth = 1920, 
+      maxHeight = 1080, 
+      quality = 0.8
+    ): Promise<File> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+
+        reader.onload = (e) => {
+          const img = new Image()
+          img.src = e.target?.result as string
+
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            let width = img.width
+            let height = img.height
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width)
+              width = maxWidth
+            }
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height)
+              height = maxHeight
+            }
+
+            canvas.width = width
+            canvas.height = height
+
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+              reject(new Error('Failed to get canvas context'))
+              return
+            }
+
+            ctx.imageSmoothingEnabled = true
+            ctx.imageSmoothingQuality = 'high'
+            ctx.drawImage(img, 0, 0, width, height)
+
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Compression failed'))
+                  return
+                }
+
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                })
+
+                resolve(compressedFile)
+              },
+              'image/jpeg',
+              quality
+            )
+          }
+
+          img.onerror = () => reject(new Error('Failed to load image'))
+        }
+
+        reader.onerror = () => reject(new Error('Failed to read file'))
+      })
+    }
+
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
       if (!file || !userId) return
@@ -89,9 +283,37 @@ const MediaUpload = forwardRef<MediaUploadHandle, MediaUploadProps>(
       }
 
       setIsUploading(true)
+      setUploadProgress('Preparing file...')
+
       try {
+        let fileToUpload = file
+
+        // Compress if it's an image
+        const isImage = file.type.startsWith('image/')
+        if (isImage) {
+          setUploadProgress('Compressing image...')
+          try {
+            // Choose compression method based on original file size
+            if (file.size > 500 * 1024) { // If larger than 500KB
+              // Compress to 50KB target
+              fileToUpload = await compressImageToTargetSize(file, 50)
+            } else if (file.size > 100 * 1024) { // If larger than 100KB
+              // Compress to 50KB target
+              fileToUpload = await compressImageToTargetSize(file, 50)
+            } else {
+              // Already small, just optimize quality
+              fileToUpload = await compressImage(file, 1920, 1080, 0.8)
+            }
+          } catch (compressionError) {
+            console.warn('Image compression failed, uploading original:', compressionError)
+            // Continue with original file if compression fails
+          }
+        }
+
+        setUploadProgress('Uploading...')
+
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', fileToUpload)
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -118,12 +340,16 @@ const MediaUpload = forwardRef<MediaUploadHandle, MediaUploadProps>(
 
         const result = await response.json()
         
+        setUploadProgress('Upload complete!')
         onMediaUploaded(result.url)
       } catch (error) {
         console.error('Failed to upload file:', error)
         alert(error instanceof Error ? error.message : 'Failed to upload file. Please try again.')
       } finally {
-        setIsUploading(false)
+        setTimeout(() => {
+          setIsUploading(false)
+          setUploadProgress('')
+        }, 500)
         if (fileInputRef.current) {
           fileInputRef.current.value = ''
         }
@@ -162,8 +388,10 @@ const MediaUpload = forwardRef<MediaUploadHandle, MediaUploadProps>(
 
               {/* Upload text */}
               <div className="space-y-2">
-                <h3 className="text-white font-semibold text-lg">Uploading Media</h3>
-                <p className="text-gray-400 text-sm">Please wait while we upload your file...</p>
+                <h3 className="text-white font-semibold text-lg">
+                  {uploadProgress || 'Uploading Media'}
+                </h3>
+                <p className="text-gray-400 text-sm">Please wait while we process your file...</p>
 
                 {/* Animated dots */}
                 <div className="flex justify-center gap-1 mt-4">
