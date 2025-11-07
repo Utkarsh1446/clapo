@@ -2,8 +2,10 @@
   "name": "Clapo",
   "short_name": "Clapo",
   "description": "Social platform for sharing and connecting",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
@@ -39,5 +41,11 @@
   ],
   "categories": ["social", "entertainment"],
   "screenshots": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {},
+  "shortcuts": []
 }
