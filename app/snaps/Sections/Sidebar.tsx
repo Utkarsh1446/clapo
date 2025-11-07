@@ -17,7 +17,7 @@ const SignInPage = dynamic(() => import("@/app/SignIn/page"), {
   ssr: false
 });
 
-type PageKey = "home" | "wallet" | "notifications" | "activity" | "profile" | "share" | "search" | "likes" | "bookmarks" | "munch" | "mention";
+type PageKey = "home" | "wallet" | "notifications" | "activity" | "profile" | "share" | "search" | "likes" | "bookmarks" | "munch" | "mention" | "explore" | "messages";
 
 type SidebarProps = {
   setCurrentPage: (page: PageKey) => void;

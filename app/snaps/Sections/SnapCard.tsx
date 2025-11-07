@@ -720,7 +720,8 @@ const handleImageClick = (e: React.MouseEvent) => {
 
               {/* Right: Price and Share */}
               <div className="flex items-center gap-1 md:gap-2">
-                <button
+                {/* TEMPORARILY COMMENTED - Post Price and Buy/Sell Button */}
+                {/* <button
                   onClick={e => {
                     e.stopPropagation()
                     setShowTokenTrading(true)
@@ -731,7 +732,7 @@ const handleImageClick = (e: React.MouseEvent) => {
                   <span className={`text-[11px] md:text-xs font-medium ${priceLoading ? 'opacity-50' : ''}`}>
                     {priceLoading ? '...' : `$${postTokenPrice.toFixed(2)}`}
                   </span>
-                </button>
+                </button> */}
 
                 <button
                   onClick={e => {
@@ -911,13 +912,13 @@ const handleImageClick = (e: React.MouseEvent) => {
 
       {toast && <Toast id="snap-toast" title="Notification" message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* Post Token Trading Modal */}
-      <PostTokenTrading
+      {/* TEMPORARILY COMMENTED - Post Token Trading Modal */}
+      {/* <PostTokenTrading
         postId={postId}
         postContent={postContent}
         isOpen={showTokenTrading}
         onClose={() => setShowTokenTrading(false)}
-      />
+      /> */}
     </>
   )
 }
