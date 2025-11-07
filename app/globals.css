@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* PWA Safe Area & Theme Color Fixes */
+html {
+  background-color: #000000;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  overflow: hidden;
+}
+
+body {
+  background-color: #000000 !important;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Standalone PWA mode specific styles */
+body.pwa-standalone {
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Ensure fixed elements respect safe areas */
+.fixed {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+/* For iOS standalone mode */
+@supports (-webkit-touch-callout: none) {
+  body {
+    padding-top: max(env(safe-area-inset-top), 20px);
+  }
+
+  /* Hide address bar on iOS */
+  body.pwa-standalone {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Hide scrollbar in PWA mode */
+body.pwa-standalone::-webkit-scrollbar {
+  display: none;
+}
+
+body.pwa-standalone {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @font-face {
     font-family: 'Proto Mono';
     src: url('/font/ProtoMono-Light.eot');
